@@ -10,6 +10,7 @@ import ErrorPage from './component/ErrorPage/ErrorPage.jsx';
 import Home from './component/Home/Home.jsx';
 import UserDashboardLayout from './component/UserDashboard/UserDashboardLayout/UserDashboardLayout.jsx';
 import Dashboard from './component/UserDashboard/UserDashboardPages/Dashboard.jsx';
+import BusinessPartner from './component/Pages/BusinessPartner.jsx';
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
         path: "/",
         element:<Home/> ,
       },
+      {
+        path:"/business_Partner",
+        element:<BusinessPartner/>
+      }
     ],
   },
 
