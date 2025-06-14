@@ -12,7 +12,7 @@ const BusinessPartner = () => {
             category: "Education",
             size: "Small (1-50)",
             website: "Website.com",
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529177/samples/look-up.jpg",
         },
         {
             id: 2,
@@ -22,7 +22,7 @@ const BusinessPartner = () => {
             category: "Technology",
             size: "Medium (51-200)",
             website: "techsolutions.com",
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529178/samples/man-on-a-escalator.jpg",
         },
         {
             id: 3,
@@ -32,7 +32,7 @@ const BusinessPartner = () => {
             category: "Marketing",
             size: "Small (1-50)",
             website: "marketingpro.com",
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529178/samples/outdoor-woman.jpg",
         },
         {
             id: 4,
@@ -42,7 +42,7 @@ const BusinessPartner = () => {
             category: "Healthcare",
             size: "Large (200+)",
             website: "healthcareplus.com",
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529178/samples/man-portrait.jpg",
         },
         {
             id: 5,
@@ -52,7 +52,7 @@ const BusinessPartner = () => {
             category: "Finance",
             size: "Medium (51-200)",
             website: "financeexpert.com",
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529179/samples/woman-on-a-football-field.jpg",
         },
         {
             id: 6,
@@ -62,7 +62,7 @@ const BusinessPartner = () => {
             category: "Design",
             size: "Small (1-50)",
             website: "designstudio.com",
-            avatar: "/placeholder.svg?height=40&width=40",
+            avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529179/samples/woman-on-a-football-field.jpg",
         },
     ])
 
@@ -171,7 +171,7 @@ const BusinessPartner = () => {
                             placeholder="Enter category"
                             value={filters.category}
                             onChange={(e) => handleFilterChange("category", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border-b border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
 
@@ -183,7 +183,7 @@ const BusinessPartner = () => {
                             placeholder="Enter location"
                             value={filters.location}
                             onChange={(e) => handleFilterChange("location", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border-b border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
 
@@ -283,7 +283,7 @@ const BusinessPartner = () => {
                                         className="w-12 h-12 rounded-full object-cover"
                                     />
                                     <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-900 mb-1">{company.name}</h3>
+                                        <h3 className="font-semibold text-gray-900 mb-1 text-lg">{company.name}</h3>
                                         <p className="text-sm text-gray-600 mb-3">{company.description}</p>
                                     </div>
                                 </div>
