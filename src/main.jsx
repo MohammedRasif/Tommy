@@ -15,6 +15,7 @@ import BusinessFilter from './component/Pages/BusinessFilter.jsx';
 import CompanyDetails from './component/UserDashboard/UserDashboardPages/CompanyDetails.jsx';
 import CompanyList from './component/UserDashboard/UserDashboardPages/CompanyList.jsx';
 import ContactList from './component/UserDashboard/UserDashboardPages/ContactList.jsx';
+import MemberShip from './component/UserDashboard/UserDashboardPages/MemberShip.jsx';
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
       {
         path:"contact_list",
         element:<ContactList/>
+      },
+      {
+        path:"membership",
+        element:<MemberShip/>
       }
     ]
   }

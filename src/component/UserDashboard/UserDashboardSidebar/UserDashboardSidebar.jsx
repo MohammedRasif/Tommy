@@ -14,7 +14,7 @@ const UserDashboardSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     { icon: <FaBuilding />, text: "Companies", path: "/dashboard/company_list" },
     { icon: <FaEnvelope />, text: "Ai Generator", path: "/ai-generator" },
     { icon: <FaAddressBook />, text: "Contact list", path: "/dashboard/contact_list" },
-    { icon: <FaAward />, text: "Membership", path: "/membership" },
+    { icon: <FaAward />, text: "Membership", path: "/dashboard/membership" },
     { icon: <FaUser />, text: "Profile", path: "/profile" },
     { icon: <FaSignOutAlt />, text: "Logout", path: "/logout" },
   ];
