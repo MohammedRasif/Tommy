@@ -12,6 +12,7 @@ import UserDashboardLayout from './component/UserDashboard/UserDashboardLayout/U
 import Dashboard from './component/UserDashboard/UserDashboardPages/Dashboard.jsx';
 import BusinessPartner from './component/Pages/BusinessPartner.jsx';
 import BusinessFilter from './component/Pages/BusinessFilter.jsx';
+import CompanyDetails from './component/UserDashboard/UserDashboardPages/CompanyDetails.jsx';
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
       {
         index:true,
         element:<Dashboard/>,
+      },
+      {
+        path:"company_details",
+        element:<CompanyDetails/>
       }
     ]
   }
