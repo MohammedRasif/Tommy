@@ -11,6 +11,7 @@ import Home from './component/Home/Home.jsx';
 import UserDashboardLayout from './component/UserDashboard/UserDashboardLayout/UserDashboardLayout.jsx';
 import Dashboard from './component/UserDashboard/UserDashboardPages/Dashboard.jsx';
 import BusinessPartner from './component/Pages/BusinessPartner.jsx';
+import BusinessFilter from './component/Pages/BusinessFilter.jsx';
 
 const router = createBrowserRouter([
   {
@@ -25,7 +26,11 @@ const router = createBrowserRouter([
       {
         path:"/business_Partner",
         element:<BusinessPartner/>
-      }
+      },
+      {
+        path:"/business_filter",
+        element:<BusinessFilter/>
+      },
     ],
   },
 
