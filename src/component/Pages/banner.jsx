@@ -13,11 +13,11 @@ const Banner = () => {
                     </p>
                     <div className="space-x-4">
                        <NavLink to="/business_filter">
-                         <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                         <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 cursor-pointer font-medium">
                             Get started for free
                         </button>
                        </NavLink>
-                        <button className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700">
+                        <button className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 cursor-pointer font-medium">
                             Watch demo
                         </button>
                     </div>

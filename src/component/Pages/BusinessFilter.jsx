@@ -38,7 +38,7 @@ const BusinessFilter = () => {
     }
 
     return (
-        <div className="min-h-screen border-b border-gray-300">
+        <div className="min-h-screen">
             <div className="py-8 pb-32">
                 <h1 className="text-5xl font-semibold text-center pb-2">Find the Right Business Partner for Your Goals</h1>
                 <p className="text-md font-medium text-gray-600 text-center">Discover companies and professionals that align with your vision—perfect for strategic outreach and collaboration.</p>
