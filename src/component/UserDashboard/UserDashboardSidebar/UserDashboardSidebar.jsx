@@ -1,22 +1,40 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaSearch, FaBuilding, FaEnvelope, FaAddressBook, FaAward, FaUser, FaSignOutAlt } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const UserDashboardSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const [activeItem, setActiveItem] = useState("Search"); // Default active item
   const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
     { icon: <FaSearch />, text: "Search", path: "/dashboard" },
     { icon: <FaBuilding />, text: "Companies", path: "/dashboard/company_list" },
     { icon: <FaEnvelope />, text: "Ai Generator", path: "/ai-generator" },
-    { icon: <FaAddressBook />, text: "Contact list", path: "/contact-list" },
+    { icon: <FaAddressBook />, text: "Contact list", path: "/dashboard/contact_list" },
     { icon: <FaAward />, text: "Membership", path: "/membership" },
     { icon: <FaUser />, text: "Profile", path: "/profile" },
     { icon: <FaSignOutAlt />, text: "Logout", path: "/logout" },
   ];
+
+  // Update active item based on current route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    let newActiveItem = "Search"; // Default to Search
+
+    if (currentPath === "/dashboard") newActiveItem = "Search";
+    else if (currentPath === "/dashboard/company_list") newActiveItem = "Companies";
+    else if (currentPath === "/ai-generator") newActiveItem = "Ai Generator";
+    else if (currentPath === "/contact-list") newActiveItem = "Contact list";
+    else if (currentPath === "/membership") newActiveItem = "Membership";
+    else if (currentPath === "/profile") newActiveItem = "Profile";
+    else if (currentPath === "/logout") newActiveItem = "Logout";
+    else if (currentPath === "/company_details") newActiveItem = "Search"; // Special case for /company_details
+
+    setActiveItem(newActiveItem);
+  }, [location.pathname]);
 
   const handleClick = (text, path) => {
     setActiveItem(text);

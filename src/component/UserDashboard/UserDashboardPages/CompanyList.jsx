@@ -236,7 +236,7 @@ const CompanyList = () => {
   }
 
   return (
-    <div className="bg-gray-50 mt-5">
+    <div className="mt-5">
       <div className="mx-auto">
         {/* Header */}
         <div className="text-center mb-6">
