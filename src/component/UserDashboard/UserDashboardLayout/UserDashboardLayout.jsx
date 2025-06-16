@@ -1,5 +1,6 @@
 "use client";
 
+
 import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Menu } from "lucide-react";
@@ -32,6 +33,14 @@ const UserDashboardLayout = () => {
       window.removeEventListener("resize", checkIfMobile);
     };
   }, []);
+import { Outlet } from "react-router-dom"
+import { useState } from "react"
+import UserDashboardSidebar from "../UserDashboardSidebar/UserDashboardSidebar"
+import UserDashboardNavbar from "../UserDashboardNavbar/UserDashboardNavbar"
+
+const UserDashboardLayout = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -39,6 +48,7 @@ const UserDashboardLayout = () => {
 
   return (
     <div className="flex h-screen relative">
+
       {/* Mobile Menu Toggle Button */}
       <button
         onClick={toggleSidebar}
@@ -62,6 +72,11 @@ const UserDashboardLayout = () => {
           isSidebarOpen
             ? "w-72 translate-x-0"
             : "w-0 -translate-x-full lg:translate-x-0 lg:w-16"
+
+      {/* Sidebar */}
+      <div
+        className={`bg-white shadow-md border-r border-gray-200 h-full fixed z-30 transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? "w-72 translate-x-0" : "w-16"
         }`}
       >
         <div className="h-full flex flex-col justify-between overflow-hidden">
@@ -71,6 +86,7 @@ const UserDashboardLayout = () => {
             setIsSidebarOpen={setIsSidebarOpen}
             isMobile={isMobile}
           />
+          <UserDashboardSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
         </div>
       </div>
 
@@ -78,9 +94,11 @@ const UserDashboardLayout = () => {
       <div
         className={`flex flex-col w-full transition-all duration-300 ease-in-out border border-red-500 ${
           isSidebarOpen ? "lg:ml-72" : "lg:ml-16"
+        className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? "ml-72" : "ml-16"
         }`}
       >
-        {/* Navbar - Fixed & Only Navbar BG White */}
+        {/* Navbar - Fixed, Full Width, Above Sidebar */}
         <div
           className="fixed top-0 z-30  bg-white dark:bg-[#1E232E] w-full border-b border-gray-200 dark:border-gray-600 transition-all duration-300 ease-in-out"
           style={{
@@ -92,12 +110,14 @@ const UserDashboardLayout = () => {
               : "calc(100% - 64px)",
             paddingLeft: isMobile ? "60px" : "0", // Add padding for mobile menu button
           }}
+
+          className="fixed top-0 left-0 z-50 bg-white w-full border-b border-gray-200 h-16 flex items-center px-4 shadow-md transition-all duration-300 ease-in-out"
         >
           <UserDashboardNavbar />
         </div>
 
         {/* Outlet (Main Content) */}
-        <div className="h-full mt-16 overflow-auto bg-[#F7F9FF] dark:bg-[#252c3b] p-4">
+        <div className="h-full mt-16 overflow-auto bg-[#F7F8F7] p-4">
           <Outlet />
         </div>
       </div>
