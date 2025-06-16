@@ -32,7 +32,7 @@ const UserDashboardNavbar = () => {
         <h1 className="text-xl font-bold">Logo Here</h1>
       </div>
       <div className="flex items-center space-x-10">
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-md flex items-center cursor-pointer">
+        <button className="bg-indigo-600 text-white px-4 py-2 rounded-md flex items-center cursor-pointer ">
           <RiUploadCloud2Line className="mr-2" size={20} />
           Upgrade
         </button>

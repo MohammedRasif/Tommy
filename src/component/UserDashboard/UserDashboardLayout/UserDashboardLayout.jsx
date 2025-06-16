@@ -40,7 +40,7 @@ const UserDashboardLayout = () => {
         </div>
 
         {/* Outlet (Main Content) */}
-        <div className="h-full mt-16 overflow-auto bg-[#F7F9FF] p-4">
+        <div className="h-full mt-16 overflow-auto bg-[#F7F8F7] p-4">
           <Outlet />
         </div>
       </div>
