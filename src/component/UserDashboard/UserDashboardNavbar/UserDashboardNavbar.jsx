@@ -1,10 +1,5 @@
-
 const UserDashboardNavbar = () => {
-    return (
-        <div>
-            
-        </div>
-    );
-}
+  return <div></div>;
+};
 
 export default UserDashboardNavbar;
