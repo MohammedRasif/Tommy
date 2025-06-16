@@ -5,6 +5,8 @@ import { NavLink } from "react-router-dom"
 
 const CompanyDetails = () => {
   const [selectedLeads, setSelectedLeads] = useState([1, 2, 3])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [designation, setDesignation] = useState("")
 
   const companyData = {
     name: "Company Name Will Be Displayed Here",
@@ -64,29 +66,39 @@ const CompanyDetails = () => {
     setSelectedLeads((prev) => (prev.includes(leadId) ? prev.filter((id) => id !== leadId) : [...prev, leadId]))
   }
 
-  
+  const handleFindDecisionMaker = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log("Submitted designation:", designation)
+    setIsModalOpen(false) // Close modal after submission (can be adjusted)
+    setDesignation("") // Reset input
+  }
 
   return (
-    <div className=" bg-gray-50 roboto">
+    <div className="bg-gray-50 roboto">
       {/* Header */}
-      <div className=" px-6 py-4">
+      <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           <NavLink to="/dashboard">
-            <button  className="flex items-center text-gray-600 hover:text-gray-800 mr-4 cursor-pointer">
-            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back
-          </button>
+            <button
+              onClick={() => setIsModalOpen(false)} // Close modal if open
+              className="flex items-center text-gray-600 hover:text-gray-800 mr-4 cursor-pointer"
+            >
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
           </NavLink>
-          <h1 className="text-3xl font-semibold text-gray-900 ">Company Details</h1>
-          <div>
-
-          </div>
+          <h1 className="text-3xl font-semibold text-gray-900">Company Details</h1>
+          <div></div>
         </div>
       </div>
 
-      <div className=" mx-auto">
+      <div className="mx-auto">
         {/* Company Profile Section */}
         <div className="bg-white rounded-lg shadow-sm border-gray-200 p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
@@ -183,14 +195,17 @@ const CompanyDetails = () => {
             <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-[#645CE8] hover:text-white font-semibold cursor-pointer transition-colors">
               Generate Email
             </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-[#645CE8] hover:text-white font-semibold cursor-pointer transition-colors">
+            <button
+              onClick={handleFindDecisionMaker}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-[#645CE8] hover:text-white font-semibold cursor-pointer transition-colors"
+            >
               Find Decision Maker
             </button>
           </div>
         </div>
 
         {/* Company Leads Section */}
-        <div className="bg-white rounded-lg shadow-sm  border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Company Leads</h3>
@@ -253,7 +268,7 @@ const CompanyDetails = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{lead.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{lead.designation}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className=" text-blue-600 hover:text-blue-800 cursor-pointer flex items-center">
+                      <span className="text-blue-600 hover:text-blue-800 cursor-pointer flex items-center">
                         {lead.website}
                         <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
@@ -290,7 +305,9 @@ const CompanyDetails = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className="text-blue-600 hover:text-blue-800 cursor-pointer underline font-semibold">Click</span>
+                      <span className="text-blue-600 hover:text-blue-800 cursor-pointer underline font-semibold">
+                        Click
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className="text-blue-600 hover:text-blue-800 cursor-pointer font-semibold">Save</span>
@@ -302,6 +319,45 @@ const CompanyDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal for Find Decision Maker */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[50vh] shadow-lg transform transition-all duration-300 ease-in-out">
+            <div className="flex flex-col  justify-between mb-8">
+              <NavLink >
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex items-center text-gray-600 hover:text-gray-800 mr-4 cursor-pointer"
+                >
+                  <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Back
+                </button>
+              </NavLink>
+              
+              <h2 className="text-xl font-semibold text-gray-700 text-center pb-5">Find Decision Maker</h2>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Enter Desired Designation</label>
+              <input
+                type="text"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Example: CEO, HR, Sales executive etc."
+              />
+              <button
+                type="submit"
+                className="w-full mt-4 bg-[#645CE8] text-white py-2 rounded-sm hover:bg-indigo-700 transition-colors cursor-pointer"
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
