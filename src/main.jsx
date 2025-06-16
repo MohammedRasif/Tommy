@@ -13,12 +13,13 @@ import Dashboard from './component/UserDashboard/UserDashboardPages/Dashboard.js
 import BusinessPartner from './component/Pages/BusinessPartner.jsx';
 import BusinessFilter from './component/Pages/BusinessFilter.jsx';
 import CompanyDetails from './component/UserDashboard/UserDashboardPages/CompanyDetails.jsx';
+import CompanyList from './component/UserDashboard/UserDashboardPages/CompanyList.jsx';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element:<Roots/> ,
-    errorElement:<ErrorPage/>,
+    // errorElement:<ErrorPage/>,
     children: [
       {
         path: "/",
@@ -47,7 +48,11 @@ const router = createBrowserRouter([
       {
         path:"company_details",
         element:<CompanyDetails/>
-      }
+      },
+      {
+        path:"company_list",
+        element:<CompanyList/>
+      },
     ]
   }
 ]);

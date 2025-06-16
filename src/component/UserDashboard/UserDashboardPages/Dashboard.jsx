@@ -4,6 +4,7 @@ import img from "../../../image/Layer 1.png"
 
 import { useState } from "react"
 import { MdOutlineLocationOn } from "react-icons/md"
+import { NavLink } from "react-router-dom"
 
 // Sample business data
 const businessData = [
@@ -465,12 +466,16 @@ const Dashboard = () => {
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center justify-end space-x-3 mt-4">
-                                                    <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+
+                                                    <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
                                                         Save
                                                     </button>
-                                                    <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                                                        View
-                                                    </button>
+
+                                                    <NavLink to="/dashboard/company_details">
+                                                        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+                                                            View
+                                                        </button>
+                                                    </NavLink>
                                                 </div>
                                             </div>
                                         </div>
@@ -486,4 +491,3 @@ const Dashboard = () => {
 }
 
 export default Dashboard
- 

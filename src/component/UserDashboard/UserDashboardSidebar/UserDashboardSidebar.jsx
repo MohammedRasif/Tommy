@@ -9,8 +9,8 @@ const UserDashboardSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { icon: <FaSearch />, text: "Search", path: "/search" },
-    { icon: <FaBuilding />, text: "Companies", path: "/companies" },
+    { icon: <FaSearch />, text: "Search", path: "/dashboard" },
+    { icon: <FaBuilding />, text: "Companies", path: "/dashboard/company_list" },
     { icon: <FaEnvelope />, text: "Ai Generator", path: "/ai-generator" },
     { icon: <FaAddressBook />, text: "Contact list", path: "/contact-list" },
     { icon: <FaAward />, text: "Membership", path: "/membership" },
@@ -29,11 +29,10 @@ const UserDashboardSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         <button
           key={index}
           onClick={() => handleClick(item.text, item.path)}
-          className={`w-full flex items-center space-x-5 p-3 rounded-r-md transition-colors duration-200 my-2 cursor-pointer pl-8 ${
-            activeItem === item.text
+          className={`w-full flex items-center space-x-5 p-3 rounded-r-md transition-colors duration-200 my-2 cursor-pointer pl-8 ${activeItem === item.text
               ? "bg-[#645CE8] text-white"
               : "text-gray-400 hover:bg-indigo-100"
-          }`}
+            }`}
         >
           <span className="text-[22px]">{item.icon}</span>
           <span className="text-[21px] font-medium">{item.text}</span>
