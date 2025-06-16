@@ -37,7 +37,7 @@ function EditProfile() {
     <div className="p-3 sm:p-4 lg:p-4 font-semibold">
       <div className="mb-3 sm:mb-4 lg:mb-5">
         <NavLink
-          to="/user/profile"
+          to="/dashboard/profile"
           className="inline-flex items-center px-2 sm:px-3 lg:px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-sm sm:text-base lg:text-base"
         >
           <IoArrowBack className="h-4 w-4 sm:h-5 sm:w-5 lg:h-5 lg:w-5 mr-1 sm:mr-2 lg:mr-2 text-gray-700" />
@@ -58,7 +58,7 @@ function EditProfile() {
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter here"
           />
         </div>
@@ -70,7 +70,7 @@ function EditProfile() {
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter here"
           />
         </div>
@@ -84,7 +84,7 @@ function EditProfile() {
             name="phonePersonal"
             value={formData.phonePersonal}
             onChange={handleChange}
-            className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter here"
           />
         </div>
@@ -98,7 +98,7 @@ function EditProfile() {
             name="describeYourself"
             value={formData.describeYourself}
             onChange={handleChange}
-            className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter here"
           />
         </div>
@@ -110,7 +110,7 @@ function EditProfile() {
             name="profession"
             value={formData.profession}
             onChange={handleChange}
-            className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter here"
           />
         </div>
@@ -122,7 +122,7 @@ function EditProfile() {
             name="education"
             value={formData.education}
             onChange={handleChange}
-            className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter here"
           />
         </div>
@@ -137,7 +137,7 @@ function EditProfile() {
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter here"
               />
             </div>
@@ -148,7 +148,7 @@ function EditProfile() {
                 name="age"
                 value={formData.age}
                 onChange={handleChange}
-                className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter here"
               />
             </div>
@@ -162,7 +162,7 @@ function EditProfile() {
             name="language"
             value={formData.language}
             onChange={handleChange}
-            className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter here"
           />
         </div>
@@ -194,7 +194,7 @@ function EditProfile() {
               name="houseNo"
               value={formData.houseNo}
               onChange={handleChange}
-              className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter here"
             />
           </div>
@@ -206,7 +206,7 @@ function EditProfile() {
               name="roadNo"
               value={formData.roadNo}
               onChange={handleChange}
-              className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter here"
             />
           </div>
@@ -218,7 +218,7 @@ function EditProfile() {
               name="townCity"
               value={formData.townCity}
               onChange={handleChange}
-              className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter here"
             />
           </div>
@@ -232,7 +232,7 @@ function EditProfile() {
               name="postalCode"
               value={formData.postalCode}
               onChange={handleChange}
-              className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter here"
             />
           </div>
@@ -244,7 +244,7 @@ function EditProfile() {
               name="country"
               value={formData.country}
               onChange={handleChange}
-              className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter here"
             />
           </div>
@@ -258,7 +258,88 @@ function EditProfile() {
               name="phoneHome"
               value={formData.phoneHome}
               onChange={handleChange}
-              className="w-full p-2 border rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter here"
+            />
+          </div>
+        </div>
+      </div>
+      {/* company inpormation Section */}
+      <div className="mt-6 sm:mt-7 lg:mt-8 mb-3 sm:mb-4 lg:mb-5">
+        <h3 className="text-lg sm:text-xl lg:text-[24px] font-semibold text-gray-700 mb-3 sm:mb-4 lg:mb-4">Company information</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-4">
+          <div>
+            <label className="block text-gray-700 font-medium text-sm sm:text-base lg:text-base mb-1">Name</label>
+            <input
+              type="text"
+              name="houseNo"
+              value={formData.houseNo}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter here"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium text-sm sm:text-base lg:text-base mb-1">Website</label>
+            <input
+              type="text"
+              name="roadNo"
+              value={formData.roadNo}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter here"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium text-sm sm:text-base lg:text-base mb-1">Annual Income</label>
+            <input
+              type="text"
+              name="townCity"
+              value={formData.townCity}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter here"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium text-sm sm:text-base lg:text-base mb-1">
+              Location
+            </label>
+            <input
+              type="text"
+              name="postalCode"
+              value={formData.postalCode}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter here"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium text-sm sm:text-base lg:text-base mb-1">Email</label>
+            <input
+              type="text"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter here"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium text-sm sm:text-base lg:text-base mb-1">
+             Contact Number
+            </label>
+            <input
+              type="tel"
+              name="phoneHome"
+              value={formData.phoneHome}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-100 rounded bg-white text-sm sm:text-base lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter here"
             />
           </div>

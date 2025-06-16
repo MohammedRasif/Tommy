@@ -75,18 +75,22 @@ const Navbar = () => {
                     </button>
                 </div>
                 <div className="text-[19px]">
-                    <button
+                    <NavLink to="/login">
+                        <button
                         onClick={() => handleClick('login')}
                         className={`px-4 py-[5px] mx-1 rounded hover:bg-[#4F46E5] font-medium cursor-pointer text-white border hover:border-gray-700`}
                     >
                         login
                     </button>
+                    </NavLink>
+                     <NavLink to="/register">
                     <button
                         onClick={() => handleClick('Register')}
                         className={`px-4 py-[5px] mx-1 rounded hover:bg-[#4F46E5] font-medium cursor-pointer text-white border hover:border-gray-700`}
                     >
                         Register
                     </button>
+                    </NavLink>
                 </div>
             </div>
         </nav>
