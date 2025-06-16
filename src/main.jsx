@@ -16,6 +16,8 @@ import CompanyDetails from './component/UserDashboard/UserDashboardPages/Company
 import CompanyList from './component/UserDashboard/UserDashboardPages/CompanyList.jsx';
 import ContactList from './component/UserDashboard/UserDashboardPages/ContactList.jsx';
 import MemberShip from './component/UserDashboard/UserDashboardPages/MemberShip.jsx';
+import Profile from './component/UserDashboard/UserDashboardPages/Profile.jsx';
+import EditProfile from './component/UserDashboard/UserDashboardPages/EditProfile.jsx';
 
 const router = createBrowserRouter([
   {
@@ -62,6 +64,14 @@ const router = createBrowserRouter([
       {
         path:"membership",
         element:<MemberShip/>
+      },
+      {
+        path:"profile",
+        element:<Profile/>
+      },
+      {
+        path:"edit_profile",
+        element:<EditProfile/>
       }
     ]
   }
