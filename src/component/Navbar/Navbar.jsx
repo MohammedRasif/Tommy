@@ -16,7 +16,7 @@ const Navbar = () => {
 
     const handleClick = (item) => {
         setActiveItem(item);
-        // Add navigation logic here if needed (e.g., using useNavigate)
+        
     };
 
     return (
