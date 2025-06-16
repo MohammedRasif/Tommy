@@ -11,7 +11,7 @@ export default function EmailPreview({
   setIdToShowEmailSingle,
 }) {
   return (
-    <div className="w-[70%] bg-white flex flex-col h-full">
+    <div className="w-[65%] bg-white flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 flex-shrink-0">
         <h2 className="text-base font-semibold text-gray-800">

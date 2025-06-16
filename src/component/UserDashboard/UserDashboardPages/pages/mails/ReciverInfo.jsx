@@ -1,23 +1,32 @@
 "use client";
 
-import { Settings, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { Settings, ChevronDown, ChevronRight } from "lucide-react";
 
 export default function RecipientForm({
   recipientData,
   onInputChange,
   onGenerateEmail,
 }) {
+  const [mode, setMode] = useState("Single");
+  const [tone, setTone] = useState("Formal");
+  const [length, setLength] = useState("Medium");
+
   return (
-    <div className="w-[30%] p-4 border-r border-gray-200 bg-white flex flex-col h-full">
+    <div className="w-[35%] p-4 border-r border-gray-200 bg-white flex flex-col h-full">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-semibold text-gray-800">
           Recipient Information
         </h2>
         <div className="relative">
-          <button className="flex items-center text-gray-600 text-xs">
-            Single
-            <ChevronRight className="h-3 w-3 ml-1" />
-          </button>
+          <select
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+            className="text-xs text-gray-600 border border-gray-300 rounded p-1"
+          >
+            <option value="Single">Single</option>
+            <option value="Multiple">Multiple</option>
+          </select>
         </div>
       </div>
 
@@ -28,12 +37,13 @@ export default function RecipientForm({
               htmlFor="name"
               className="block text-xs font-medium text-gray-700 mb-1"
             >
-              Name
+              {mode === "Single" ? "Name" : "Write names sapereted by ( , )"}
             </label>
             <input
               type="text"
               id="name"
               value={recipientData.name}
+              placeholder="Enter here"
               onChange={(e) => onInputChange("name", e.target.value)}
               className="w-full p-1.5 border border-gray-300 rounded text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
             />
@@ -50,6 +60,7 @@ export default function RecipientForm({
               type="text"
               id="company"
               value={recipientData.company}
+              placeholder="Enter here"
               onChange={(e) => onInputChange("company", e.target.value)}
               className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
             />
@@ -65,6 +76,7 @@ export default function RecipientForm({
             <input
               type="text"
               id="position"
+              placeholder="Enter here"
               value={recipientData.position}
               onChange={(e) => onInputChange("position", e.target.value)}
               className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
@@ -76,11 +88,12 @@ export default function RecipientForm({
               htmlFor="email"
               className="block text-xs font-medium text-gray-700 mb-1"
             >
-              Email
+              {mode == "single" ? "Email" : "Enter email saperated by ( ,)"}
             </label>
             <input
               type="email"
               id="email"
+              placeholder="example@gmail.com"
               value={recipientData.email}
               onChange={(e) => onInputChange("email", e.target.value)}
               className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
@@ -112,14 +125,25 @@ export default function RecipientForm({
             </div>
 
             <div className="grid grid-cols-2 gap-1">
-              <button className="flex items-center justify-between p-1.5 border border-gray-200 rounded text-xs">
-                <span className="text-gray-700">Tone</span>
-                <ChevronRight className="h-2 w-2 text-gray-500" />
-              </button>
-              <button className="flex items-center justify-between p-1.5 border border-gray-200 rounded text-xs">
-                <span className="text-gray-700">Length</span>
-                <ChevronRight className="h-2 w-2 text-gray-500" />
-              </button>
+              <select
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                className="p-1.5 border border-gray-200 rounded text-xs text-gray-700"
+              >
+                <option value="Formal">Formal</option>
+                <option value="Friendly">Friendly</option>
+                <option value="Persuasive">Persuasive</option>
+              </select>
+
+              <select
+                value={length}
+                onChange={(e) => setLength(e.target.value)}
+                className="p-1.5 border border-gray-200 rounded text-xs text-gray-700"
+              >
+                <option value="Short">Short</option>
+                <option value="Medium">Medium</option>
+                <option value="Long">Long</option>
+              </select>
             </div>
           </div>
         </div>
