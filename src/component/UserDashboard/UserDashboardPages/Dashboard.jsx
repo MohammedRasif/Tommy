@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Draft from "./pages/Draft";
+import EmailShowGen from "./pages/mails/EmailShowGen";
 
 // Sample data
 const sampleData = [
@@ -69,6 +70,8 @@ export default function Dashboard() {
   const [selectedData, setSelectedData] = useState([]);
   const [activeTab, setActiveTab] = useState("draft");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isEmailShown, setIsEmailShown] = useState(false);
+  const [idToShowEmailSingle, setIdToShowEmailSingle] = useState("");
 
   const filteredData = useMemo(() => {
     if (!searchQuery) return data;
@@ -110,6 +113,8 @@ export default function Dashboard() {
   const handleEdit = (id) => {
     console.log("Edit clicked for ID:", id);
     const item = data.find((item) => item.id === id);
+    setIdToShowEmailSingle(id);
+    setIsEmailShown(true);
     console.log("Edit item:", item);
   };
 
@@ -137,34 +142,35 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex w-full items-center justify-center mb-5">
-          <div className="flex w-fit">
-            <button
-              onClick={() => handleTabChange("draft")}
-              className={`px-6 py-3 text-sm font-medium  transition-colors rounded-s-xl hover:cursor-pointer ${
-                activeTab === "draft"
-                  ? "bg-[#645CE8]  text-white text-lg "
-                  : "bg-[#ededed] text-lg text-black"
-              }`}
-            >
-              Draft
-            </button>
-            <button
-              onClick={() => handleTabChange("sent")}
-              className={`px-6 py-3 text-sm font-medium  transition-colors rounded-e-xl hover:cursor-pointer ${
-                activeTab === "sent"
-                  ? "bg-[#645CE8]  text-white text-lg "
-                  : "bg-[#ededed] text-lg text-black"
-              }`}
-            >
-              Sent
-            </button>
+    <>
+      <div className="min-h-screen p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex w-full items-center justify-center mb-5">
+            <div className="flex w-fit">
+              <button
+                onClick={() => handleTabChange("draft")}
+                className={`px-6 py-3 text-sm font-medium  transition-colors rounded-s-xl hover:cursor-pointer ${
+                  activeTab === "draft"
+                    ? "bg-[#645CE8]  text-white text-lg "
+                    : "bg-[#ededed] text-lg text-black"
+                }`}
+              >
+                Draft
+              </button>
+              <button
+                onClick={() => handleTabChange("sent")}
+                className={`px-6 py-3 text-sm font-medium  transition-colors rounded-e-xl hover:cursor-pointer ${
+                  activeTab === "sent"
+                    ? "bg-[#645CE8]  text-white text-lg "
+                    : "bg-[#ededed] text-lg text-black"
+                }`}
+              >
+                Sent
+              </button>
+            </div>
           </div>
-        </div>
-        {/* Debug Info */}
-        {/* <div className="mb-4 p-4 bg-white rounded-lg shadow text-sm">
+          {/* Debug Info */}
+          {/* <div className="mb-4 p-4 bg-white rounded-lg shadow text-sm">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <strong>Active Tab:</strong> {activeTab}
@@ -187,25 +193,34 @@ export default function Dashboard() {
           </div>
         </div> */}
 
-        {activeTab == "draft" ? (
-          <Draft
-            data={data}
-            filteredData={filteredData}
-            selectedRows={selectedRows}
-            activeTab={activeTab}
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-            onSelectionChange={handleSelectionChange}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onBulkDelete={handleBulkDelete}
-            onCopyEmail={handleCopyEmail}
-          />
-        ) : (
-          <div>Sent</div>
-        )}
+          {activeTab == "draft" ? (
+            <Draft
+              data={data}
+              filteredData={filteredData}
+              selectedRows={selectedRows}
+              activeTab={activeTab}
+              searchQuery={searchQuery}
+              onSearchChange={handleSearchChange}
+              onSelectionChange={handleSelectionChange}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onBulkDelete={handleBulkDelete}
+              onCopyEmail={handleCopyEmail}
+            />
+          ) : (
+            <div>Sent</div>
+          )}
+        </div>
       </div>
-    </div>
+      {isEmailShown && (
+        <EmailShowGen
+          idToShowEmailSingle={idToShowEmailSingle}
+          handleDelete={handleDelete}
+          setIsEmailShown={setIsEmailShown}
+          setIdToShowEmailSingle={setIdToShowEmailSingle}
+        />
+      )}
+    </>
   );
 }
