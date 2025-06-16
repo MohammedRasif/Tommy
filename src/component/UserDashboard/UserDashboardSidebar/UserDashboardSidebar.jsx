@@ -36,7 +36,7 @@ const UserDashboardSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           }`}
         >
           <span className="text-[22px]">{item.icon}</span>
-          <span className="text-[22px] font-medium">{item.text}</span>
+          <span className="text-[21px] font-medium">{item.text}</span>
         </button>
       ))}
     </div>
