@@ -1,3 +1,5 @@
+const UserDashboardNavbar = () => {
+  return <div></div>;
 "use client"
 
 import { useState, useEffect, useRef } from "react";
