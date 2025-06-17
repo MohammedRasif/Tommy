@@ -3,7 +3,7 @@ import video from "../../image/hero.mp4";
 
 const Banner = () => {
   return (
-    <div className="relative bg-gradient-to-r from-gray-900 to-black text-white py-16 md:py-32 lg:py-64 overflow-hidden">
+    <div id="banner" className="relative bg-gradient-to-r from-gray-900 to-black text-white py-16 md:py-32 lg:py-64 overflow-hidden">
       {/* Background Video */}
       <video
         autoPlay

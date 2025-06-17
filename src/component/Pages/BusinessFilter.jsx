@@ -38,14 +38,18 @@ const BusinessFilter = () => {
     }
 
     return (
-        <div className="min-h-screen">
-            <div className="py-8 pb-32">
-                <h1 className="text-5xl font-semibold text-center pb-2">Find the Right Business Partner for Your Goals</h1>
-                <p className="text-md font-medium text-gray-600 text-center">Discover companies and professionals that align with your vision—perfect for strategic outreach and collaboration.</p>
+        <div className="min-h-screen pt-16 sm:pt-20">
+            <div className="py-6 sm:py-8 pb-16 sm:pb-32 text-center">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold pb-2">
+                    Find the Right Business Partner for Your Goals
+                </h1>
+                <p className="text-sm sm:text-base lg:text-md font-medium text-gray-600 max-w-2xl mx-auto">
+                    Discover companies and professionals that align with your vision—perfect for strategic outreach and collaboration.
+                </p>
             </div>
-            <div className="container mx-auto bg-white">
+            <div className="container mx-auto px-4 bg-white">
                 {/* Top Search Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                     {/* Search Keywords */}
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -63,7 +67,7 @@ const BusinessFilter = () => {
                             placeholder="Search for Business or keywords"
                             value={searchKeywords}
                             onChange={(e) => setSearchKeywords(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base"
                         />
                     </div>
 
@@ -85,23 +89,23 @@ const BusinessFilter = () => {
                             placeholder="Enter Location (City, State, Country etc)"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base"
                         />
                     </div>
                 </div>
 
                 {/* Filter Toggle and Reset Row */}
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 sm:gap-0">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium cursor-pointer text-sm sm:text-base"
                     >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                             />
                         </svg>
                         {showFilters ? "Hide filters" : "Show filters"}
@@ -115,19 +119,19 @@ const BusinessFilter = () => {
                         </svg>
                     </button>
 
-                    <button onClick={handleReset} className="text-gray-500 hover:text-gray-700 font-medium">
+                    <button onClick={handleReset} className="text-gray-500 hover:text-gray-700 font-medium text-sm sm:text-base">
                         Reset
                     </button>
                 </div>
 
                 {/* Additional Filters (Collapsible) */}
                 {showFilters && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 animate-in slide-in-from-top duration-300">
+                    <div className="grid grid-cols-2 gap-4 mb-6 animate-in slide-in-from-top duration-300">
                         {/* Category */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path
+                                   18                    <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         strokeWidth={2}
@@ -140,7 +144,7 @@ const BusinessFilter = () => {
                                 placeholder="Categories the industry (Ex. Real estate, food etc)"
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base"
                             />
                         </div>
 
@@ -159,7 +163,7 @@ const BusinessFilter = () => {
                             <select
                                 value={selectedEmployeeSize}
                                 onChange={(e) => setSelectedEmployeeSize(e.target.value)}
-                                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white"
+                                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-sm sm:text-base"
                             >
                                 <option value="">Employee size</option>
                                 {employeeSizeOptions.map((option) => (
@@ -176,24 +180,23 @@ const BusinessFilter = () => {
                         </div>
 
                         {/* Employee Size Options Display */}
-                        {showFilters && (
-                            <div className="md:col-span-2">
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {employeeSizeOptions.map((option) => (
-                                        <button
-                                            key={option.value}
-                                            onClick={() => setSelectedEmployeeSize(option.value)}
-                                            className={`px-3 py-1 text-sm rounded-full border transition-colors ${selectedEmployeeSize === option.value
+                        <div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {employeeSizeOptions.map((option) => (
+                                    <button
+                                        key={option.value}
+                                        onClick={() => setSelectedEmployeeSize(option.value)}
+                                        className={`px-3 py-1 text-xs sm:text-sm rounded-full border transition-colors ${
+                                            selectedEmployeeSize === option.value
                                                 ? "bg-blue-600 text-white border-blue-600"
                                                 : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                                                }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
+                                        }`}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
                             </div>
-                        )}
+                        </div>
                     </div>
                 )}
 
@@ -202,7 +205,7 @@ const BusinessFilter = () => {
                     <NavLink to="/business_Partner">
                         <button
                             onClick={handleSearch}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 sm:px-8 py-3 rounded-lg transition-colors flex items-center gap-2 cursor-pointer text-sm sm:text-base"
                         >
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path

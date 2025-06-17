@@ -73,57 +73,80 @@ const Slider = () => {
   ]
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === reviews.length - 4 ? 0 : prevIndex + 1))
+    setCurrentIndex((prevIndex) => {
+      // Adjust max index based on screen size
+      const maxIndex = window.innerWidth < 640 ? reviews.length - 1 : window.innerWidth < 1024 ? reviews.length - 2 : reviews.length - 4
+      return prevIndex >= maxIndex ? 0 : prevIndex + 1
+    })
   }
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? reviews.length - 4 : prevIndex - 1))
+    setCurrentIndex((prevIndex) => {
+      // Adjust max index based on screen size
+      const maxIndex = window.innerWidth < 640 ? reviews.length - 1 : window.innerWidth < 1024 ? reviews.length - 2 : reviews.length - 4
+      return prevIndex === 0 ? maxIndex : prevIndex - 1
+    })
   }
 
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, index) => (
-      <span key={index} className={`text-2xl ${index < rating ? "text-yellow-400" : "text-gray-300"}`}>
+      <span key={index} className={`text-lg sm:text-xl lg:text-2xl ${index < rating ? "text-yellow-400" : "text-gray-300"}`}>
         ★
       </span>
     ))
   }
 
   return (
-    <div className="bg-gray-50 py-16 px-4">
+    <div id="reviews" className="bg-gray-50 py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Our Users Reviews</h2>
-          <p className="text-gray-600 text-lg">Have a look what our clients opinion</p>
+        <div className="text-center mb-8 sm:mb-10 lg:mb-12">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">
+            Our Users Reviews
+          </h2>
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600">
+            Have a look what our clients opinion
+          </p>
         </div>
 
         {/* Reviews Container */}
         <div className="relative overflow-hidden">
           <div
             className="flex transition-transform duration-[500ms] ease-in-out"
-            style={{ transform: `translateX(-${currentIndex * 25}%)` }}
+            style={{
+              transform: `translateX(-${currentIndex * (window.innerWidth < 640 ? 100 : window.innerWidth < 1024 ? 50 : 25)}%)`,
+            }}
           >
             {reviews.map((review) => (
-              <div key={review.id} className="w-1/4 flex-shrink-0 px-3">
-                <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 h-80 flex flex-col justify-between">
+              <div
+                key={review.id}
+                className="w-full sm:w-1/2 lg:w-1/4 flex-shrink-0 px-2 sm:px-3"
+              >
+                <div className="bg-white rounded-lg p-4 sm:p-5 lg:p-6 shadow-lg border border-gray-200 h-72 sm:h-76 lg:h-80 flex flex-col justify-between">
                   {/* Stars */}
-                  <div className="flex justify-center  ">{renderStars(review.rating)}</div>
+                  <div className="flex justify-center">{renderStars(review.rating)}</div>
 
                   {/* Review Text */}
-                  <div className="flex-grow flex pt-8">
-                    <p className="text-gray-600 text-start leading-relaxed text-[15px] font-medium">{review.text}</p>
+                  <div className="flex-grow pt-4 sm:pt-6 lg:pt-8">
+                    <p className="text-gray-600 text-start leading-relaxed text-xs sm:text-sm lg:text-[15px] font-medium">
+                      {review.text}
+                    </p>
                   </div>
 
                   {/* User Info */}
-                  <div className="flex items-center justify-start gap-3 mt-4">
+                  <div className="flex items-center justify-start gap-2 sm:gap-3 mt-3 sm:mt-4">
                     <img
                       src={review.avatar || "/placeholder.svg"}
                       alt={review.name}
-                      className="w-12 h-12 rounded-full object-cover"
+                      className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full object-cover"
                     />
-                    <div className="">
-                      <h4 className="font-semibold text-gray-800 text-[15px]">{review.name}</h4>
-                      <p className="text-xs text-gray-500">{review.title}</p>
+                    <div>
+                      <h4 className="font-semibold text-gray-800 text-sm sm:text-[14px] lg:text-[15px]">
+                        {review.name}
+                      </h4>
+                      <p className="text-[10px] sm:text-xs lg:text-xs text-gray-500">
+                        {review.title}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -132,29 +155,27 @@ const Slider = () => {
           </div>
 
           {/* Navigation Arrows */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
             <button
               onClick={prevSlide}
-              className="w-12 h-12 bg-gray-700 hover:bg-gray-800 text-white rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer"
+              className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-gray-700 hover:bg-gray-800 text-white rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer"
               aria-label="Previous review"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
 
             <button
               onClick={nextSlide}
-              className="w-12 h-12 bg-gray-700 hover:bg-gray-800 text-white rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer"
+              className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-gray-700 hover:bg-gray-800 text-white rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer"
               aria-label="Next review"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
-
-          
         </div>
       </div>
     </div>

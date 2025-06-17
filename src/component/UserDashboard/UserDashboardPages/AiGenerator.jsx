@@ -150,8 +150,8 @@ export default function AiGenerator() {
 
   return (
     <>
-      <div className="min-h-screen p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="">
+        <div className="mx-auto">
           <div className="flex w-full items-center justify-center mb-5">
             <div className="flex w-fit">
               <button

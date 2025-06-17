@@ -213,8 +213,8 @@ const ContactList = () => {
   }
 
   return (
-    <div className=" ">
-      <div className=" mx-auto ">
+    <div className="p-2 ">
+      <div className="mx-auto ">
         {/* Header */}
         <div className="text-center mb-6">
           <div className="flex justify-between items-center mb-4">
