@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { Settings, ChevronDown, ChevronRight } from "lucide-react";
+import { FaPlus } from "react-icons/fa";
 
 export default function RecipientForm({
   recipientData,
   onInputChange,
   onGenerateEmail,
+  setIsReciverList,
 }) {
   const [mode, setMode] = useState("Single");
   const [tone, setTone] = useState("Formal");
@@ -32,72 +34,87 @@ export default function RecipientForm({
 
       <div className="flex-1 flex flex-col justify-between">
         <div className="space-y-3">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              {mode === "Single" ? "Name" : "Write names sapereted by ( , )"}
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={recipientData.name}
-              placeholder="Enter here"
-              onChange={(e) => onInputChange("name", e.target.value)}
-              className="w-full p-1.5 border border-gray-300 rounded text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
-            />
-          </div>
+          {mode == "Single" && (
+            <>
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={recipientData.name}
+                  placeholder="Enter here"
+                  onChange={(e) => onInputChange("name", e.target.value)}
+                  className="w-full p-1.5 border border-gray-300 rounded text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
+                />
+              </div>
 
-          <div>
-            <label
-              htmlFor="company"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Company
-            </label>
-            <input
-              type="text"
-              id="company"
-              value={recipientData.company}
-              placeholder="Enter here"
-              onChange={(e) => onInputChange("company", e.target.value)}
-              className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="position"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Position
-            </label>
-            <input
-              type="text"
-              id="position"
-              placeholder="Enter here"
-              value={recipientData.position}
-              onChange={(e) => onInputChange("position", e.target.value)}
-              className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
-            />
-          </div>
+              <div>
+                <label
+                  htmlFor="company"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  Company
+                </label>
+                <input
+                  type="text"
+                  id="company"
+                  value={recipientData.company}
+                  placeholder="Enter here"
+                  onChange={(e) => onInputChange("company", e.target.value)}
+                  className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="position"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  Position
+                </label>
+                <input
+                  type="text"
+                  id="position"
+                  placeholder="Enter here"
+                  value={recipientData.position}
+                  onChange={(e) => onInputChange("position", e.target.value)}
+                  className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label
               htmlFor="email"
               className="block text-xs font-medium text-gray-700 mb-1"
             >
-              {mode == "single" ? "Email" : "Enter email saperated by ( ,)"}
+              {mode == "single" ? "Email" : "Emails"}
             </label>
-            <input
-              type="email"
-              id="email"
-              placeholder="example@gmail.com"
-              value={recipientData.email}
-              onChange={(e) => onInputChange("email", e.target.value)}
-              className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
-            />
+            {mode == "Single" ? (
+              <input
+                type="email"
+                id="email"
+                placeholder="example@gmail.com"
+                value={recipientData.email}
+                onChange={(e) => onInputChange("email", e.target.value)}
+                className="w-full p-1.5 border border-gray-300 rounded text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
+              />
+            ) : (
+              <div
+                onClick={() => {
+                  setIsReciverList((prev) => !prev);
+                }}
+                className="flex items-center  gap-3 text-[#4F46E5] cursor-pointer"
+              >
+                <span>Recipient List </span>
+                <FaPlus />
+              </div>
+            )}
           </div>
 
           <div>

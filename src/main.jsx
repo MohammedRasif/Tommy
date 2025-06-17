@@ -22,13 +22,14 @@ import RegisterVerication from "./component/Pages/registerVerication.jsx";
 import ForgetPasswordVerification from "./component/Pages/ForgetPasswordVerification.jsx";
 import ChangePassword from "./component/Pages/ChangePassword.jsx";
 import SuccessfullyMessage from "./component/Pages/SuccessfullyMessage.jsx";
+import AiGenerator from "./component/UserDashboard/UserDashboardPages/AiGenerator.jsx";
 // import AiGenerator from "./component/UserDashboard/UserDashboardPages/AiGenerator.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Roots />,
-    errorElement: <ErrorPage />,
+    // errorElement: <ErrorPage />,
     children: [
       {
         path: "/",
@@ -45,32 +46,32 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path:"/login",
-    element:<Login/>
+    path: "/login",
+    element: <Login />,
   },
   {
-    path:"/register",
-    element:<Register/>
+    path: "/register",
+    element: <Register />,
   },
   {
-    path:"/register_verification",
-    element:<RegisterVerication/>
+    path: "/register_verification",
+    element: <RegisterVerication />,
   },
   {
-    path:"/forgetPassword_verification",
-    element:<ForgetPasswordVerification/>
+    path: "/forgetPassword_verification",
+    element: <ForgetPasswordVerification />,
   },
   {
-    path:"/forgetPassword",
-    element:<ForgetPassword/>
+    path: "/forgetPassword",
+    element: <ForgetPassword />,
   },
   {
-    path:"/change_password",
-    element:<ChangePassword/>
+    path: "/change_password",
+    element: <ChangePassword />,
   },
   {
-    path:"/successfully",
-    element:<SuccessfullyMessage/>
+    path: "/successfully",
+    element: <SuccessfullyMessage />,
   },
   {
     path: "/dashboard",
@@ -104,10 +105,10 @@ const router = createBrowserRouter([
         path: "edit_profile",
         element: <EditProfile />,
       },
-      // {
-      //   path: "ai_generator",
-      //   element: <AiGenerator />,
-      // },
+      {
+        path: "ai_generator",
+        element: <AiGenerator />,
+      },
     ],
   },
 ]);
