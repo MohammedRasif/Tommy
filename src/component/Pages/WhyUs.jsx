@@ -3,7 +3,7 @@ import img from "../../image/Group 2147226130.png";
 
 const WhyUs = () => {
     return (
-        <div className="flex items-center justify-center  bg-white">
+        <div id="why-us" className="flex items-center justify-center  bg-white">
             <div className="flex flex-row w-full container mx-auto py-32">
                 {/* Text Section */}
                 <div className="w-1/2 pr-8">

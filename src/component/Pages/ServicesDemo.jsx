@@ -2,7 +2,7 @@ import img from "../../image/Group 2147226129.png";
 
 const ServicesDemo = () => {
     return (
-        <div className="  py-16 container mx-auto">
+        <div id="service" className="  py-16 container mx-auto">
             <div className="text-center mb-20">
                 <h1 className="text-5xl font-bold mb-4">Services Of Demo. Ai</h1>
                 <p className="text-[17px] text-gray-600 mb-8">

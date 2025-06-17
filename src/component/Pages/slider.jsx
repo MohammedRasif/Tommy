@@ -89,7 +89,7 @@ const Slider = () => {
   }
 
   return (
-    <div className="bg-gray-50 py-16 px-4">
+    <div id="reviews" className="bg-gray-50 py-16 px-4">
       <div className="container mx-auto">
         {/* Header */}
         <div className="text-center mb-12">

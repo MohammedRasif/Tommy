@@ -41,7 +41,7 @@ const Package = () => {
   ];
 
   return (
-    <div className="bg-gray-50 py-16 px-4 sm:px-6 lg:px-10">
+    <div id="pricing" className="bg-gray-50 py-16 px-4 sm:px-6 lg:px-10">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">Find Your Appropriate Package Here</h1>
