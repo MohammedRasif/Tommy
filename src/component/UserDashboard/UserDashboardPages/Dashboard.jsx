@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Draft from "./pages/Draft";
 import EmailShowGen from "./pages/mails/EmailShowGen";
+import Sent from "./pages/Sent";
 
 // Sample data
 const sampleData = [
@@ -209,11 +210,11 @@ export default function Dashboard() {
               onCopyEmail={handleCopyEmail}
             />
           ) : (
-            <div>Sent</div>
+            <Sent />
           )}
         </div>
       </div>
-      {isEmailShown && (
+      {isEmailShown && activeTab == "draft" && (
         <EmailShowGen
           idToShowEmailSingle={idToShowEmailSingle}
           handleDelete={handleDelete}
