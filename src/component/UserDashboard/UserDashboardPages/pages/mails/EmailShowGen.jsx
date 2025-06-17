@@ -5,7 +5,7 @@ import RecipientForm from "./ReciverInfo";
 import EmailPreview from "./EmailPreview";
 import toast, { Toaster } from "react-hot-toast";
 
-export default function EmailGenerator({
+export default function EmailShowGen({
   setIsEmailShown,
   setIdToShowEmailSingle,
   handleDelete,

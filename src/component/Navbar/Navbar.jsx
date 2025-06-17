@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
     const [activeItem, setActiveItem] = useState('Home');
@@ -16,7 +16,7 @@ const Navbar = () => {
 
     const handleClick = (item) => {
         setActiveItem(item);
-        
+
     };
 
     return (
@@ -26,20 +26,22 @@ const Navbar = () => {
                     <h1 className="ml-5 text-[26px]">logo</h1>
                 </div>
                 <div className="flex items-center py-1 text-[20px] font-medium">
-                    <button
-                        onClick={() => handleClick('Home')}
-                        className={`px-4 py-[5px] mx-1 rounded ${activeItem === 'Home'
+                    <NavLink to="/">
+                        <button
+                            onClick={() => handleClick('Home')}
+                            className={`px-4 py-[5px] mx-1 rounded ${activeItem === 'Home'
                                 ? 'bg-[#4F46E5] cursor-pointer text-white shadow-2xl'
                                 : 'bg-transparent text-white hover:bg-blue-600'
-                            }`}
-                    >
-                        Home
-                    </button>
+                                }`}
+                        >
+                            Home
+                        </button>
+                    </NavLink>
                     <button
                         onClick={() => handleClick('Service')}
                         className={`px-4 py-[5px] mx-1 rounded ${activeItem === 'Service'
-                                ? 'bg-[#4F46E5] cursor-pointer text-white'
-                                : 'bg-transparent text-white hover:bg-blue-600'
+                            ? 'bg-[#4F46E5] cursor-pointer text-white'
+                            : 'bg-transparent text-white hover:bg-blue-600'
                             }`}
                     >
                         Service
@@ -47,8 +49,8 @@ const Navbar = () => {
                     <button
                         onClick={() => handleClick('Pricing')}
                         className={`px-4 py-[5px] mx-1 rounded ${activeItem === 'Pricing'
-                                ? 'bg-[#4F46E5] cursor-pointer text-white'
-                                : 'bg-transparent text-white hover:bg-blue-600'
+                            ? 'bg-[#4F46E5] cursor-pointer text-white'
+                            : 'bg-transparent text-white hover:bg-blue-600'
                             }`}
                     >
                         Pricing
@@ -56,8 +58,8 @@ const Navbar = () => {
                     <button
                         onClick={() => handleClick('Why us')}
                         className={`px-4 py-[5px] mx-1 rounded ${activeItem === 'Why us'
-                                ? 'bg-[#4F46E5] cursor-pointer text-white'
-                                : 'bg-transparent text-white hover:bg-blue-600'
+                            ? 'bg-[#4F46E5] cursor-pointer text-white'
+                            : 'bg-transparent text-white hover:bg-blue-600'
                             }`}
                     >
                         Why us
@@ -65,26 +67,30 @@ const Navbar = () => {
                     <button
                         onClick={() => handleClick('Reviews')}
                         className={`px-4 py-[5px] mx-1 rounded ${activeItem === 'Reviews'
-                                ? 'bg-[#4F46E5] cursor-pointer text-white'
-                                : 'bg-transparent text-white hover:bg-blue-600'
+                            ? 'bg-[#4F46E5] cursor-pointer text-white'
+                            : 'bg-transparent text-white hover:bg-blue-600'
                             }`}
                     >
                         Reviews
                     </button>
                 </div>
                 <div className="text-[19px]">
-                    <button
+                    <NavLink to="/login">
+                        <button
                         onClick={() => handleClick('login')}
                         className={`px-4 py-[5px] mx-1 rounded hover:bg-[#4F46E5] font-medium cursor-pointer text-white border hover:border-gray-700`}
                     >
                         login
                     </button>
+                    </NavLink>
+                     <NavLink to="/register">
                     <button
                         onClick={() => handleClick('Register')}
                         className={`px-4 py-[5px] mx-1 rounded hover:bg-[#4F46E5] font-medium cursor-pointer text-white border hover:border-gray-700`}
                     >
                         Register
                     </button>
+                    </NavLink>
                 </div>
             </div>
         </nav>
