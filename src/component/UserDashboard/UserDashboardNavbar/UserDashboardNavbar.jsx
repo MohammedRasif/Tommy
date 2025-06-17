@@ -5,6 +5,8 @@ import { useState, useEffect, useRef } from "react";
 import { AiOutlineDown } from "react-icons/ai";
 import { GoChevronRight } from "react-icons/go";
 import { RiUploadCloud2Line } from "react-icons/ri";
+import img from "../../../image/Group (3).png"
+import { NavLink } from "react-router-dom";
 
 const UserDashboardNavbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -29,9 +31,9 @@ const UserDashboardNavbar = () => {
 
   return (
     <div className="fixed top-0 left-0 w-full h-16 bg-white border-b border-gray-200 flex items-center justify-between px-20 shadow-md z-50">
-      <div>
-        <h1 className="text-xl font-bold">Logo Here</h1>
-      </div>
+      <NavLink to="/"><div>
+        <img src={img} className='h-14' alt="" />
+      </div></NavLink>
       <div className="flex items-center space-x-10">
         <button className="bg-indigo-600 text-white px-4 py-2 rounded-md flex items-center cursor-pointer ">
           <RiUploadCloud2Line className="mr-2" size={20} />

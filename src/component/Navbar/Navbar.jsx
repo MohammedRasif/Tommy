@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import img from "../../image/Group (3).png"
 
 const Navbar = () => {
     const [activeItem, setActiveItem] = useState('Home');
@@ -85,7 +86,7 @@ const Navbar = () => {
             <div className="flex items-center justify-between container mx-auto px-4">
                 {/* Logo */}
                 <div>
-                    <h1 className="text-[26px] font-bold">logo</h1>
+                    <img src={img} className='h-14' alt="" />
                 </div>
 
                 {/* Hamburger Menu for Mobile */}
