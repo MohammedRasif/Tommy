@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { FiCopy, FiTrash2, FiSearch } from "react-icons/fi";
+import ViewMail from "./mails/ViewMail";
 
 export default function Sent({
   data,
@@ -8,14 +10,13 @@ export default function Sent({
   searchQuery,
   onSearchChange,
   onSelectionChange,
-  onView,
   onDelete,
   onBulkDelete,
   onCopyEmail,
 }) {
   const selectAll =
     selectedRows.length === filteredData.length && filteredData.length > 0;
-
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const handleSelectAll = () => {
     if (selectAll) {
       onSelectionChange([], []);
@@ -170,7 +171,7 @@ export default function Sent({
                   </td>
                   <td className="p-4">
                     <button
-                      onClick={() => onView && onView(row.id)}
+                      onClick={() => setIsViewOpen(true)}
                       className="text-[#473ED7] hover:text-[#473ED7] text-sm font-medium hover:underline hover:cursor-pointer"
                     >
                       View
@@ -191,6 +192,9 @@ export default function Sent({
           </tbody>
         </table>
       </div>
+      {isViewOpen && activeTab == "sent" && (
+        <ViewMail setIsViewOpen={setIsViewOpen} />
+      )}
     </div>
   );
 }
