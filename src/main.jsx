@@ -1,4 +1,4 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -23,6 +23,9 @@ import ForgetPasswordVerification from "./component/Pages/ForgetPasswordVerifica
 import ChangePassword from "./component/Pages/ChangePassword.jsx";
 import SuccessfullyMessage from "./component/Pages/SuccessfullyMessage.jsx";
 import AiGenerator from "./component/UserDashboard/UserDashboardPages/AiGenerator.jsx";
+import Contact from "./component/UserDashboard/UserDashboardPages/Contact.jsx";
+import { Provider } from "react-redux";
+import store from "./Redux/store.js";
 // import AiGenerator from "./component/UserDashboard/UserDashboardPages/AiGenerator.jsx";
 
 const router = createBrowserRouter([
@@ -42,6 +45,10 @@ const router = createBrowserRouter([
       {
         path: "/business_filter",
         element: <BusinessFilter />,
+      },
+      {
+        path: "/contact",
+        element: <Contact />,
       },
     ],
   },
@@ -63,6 +70,10 @@ const router = createBrowserRouter([
   },
   {
     path: "/forgetPassword",
+    element: <ForgetPassword />,
+  },
+  {
+    path: "/forgot-password",
     element: <ForgetPassword />,
   },
   {
@@ -114,7 +125,11 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+  <StrictMode>
+    <Provider store={store}>
+      <React.StrictMode>
+        <RouterProvider router={router} />
+      </React.StrictMode>
+    </Provider>
+  </StrictMode>
 );

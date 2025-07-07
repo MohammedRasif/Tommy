@@ -4,94 +4,11 @@ import img from "../../../image/Layer 1.png";
 import { useState } from "react";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { NavLink } from "react-router-dom";
+import { useBusinessSearchMutation, useSaveCompanyMutation } from "../../../Redux/feature/ApiSlice";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Sample business data
-const businessData = [
-  {
-    id: 1,
-    company: "Tech Solutions Inc",
-    job: "Software Development",
-    category: "Technology",
-    location: "Austin, TX",
-    employeeSize: "201-500",
-    revenue: "10M-50M",
-    keywords: ["software", "development", "tech"],
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    employees: 350,
-    website: "techsolutions.com",
-  },
-  {
-    id: 2,
-    company: "Marketing Pro Agency",
-    job: "Digital Marketing",
-    category: "Marketing",
-    location: "Dallas, TX",
-    employeeSize: "51-200",
-    revenue: "5M-10M",
-    keywords: ["marketing", "digital", "advertising"],
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    employees: 125,
-    website: "marketingpro.com",
-  },
-  {
-    id: 3,
-    company: "Healthcare Innovations",
-    job: "Healthcare Services",
-    category: "Healthcare",
-    location: "Houston, TX",
-    employeeSize: "501-1000",
-    revenue: "50M-100M",
-    keywords: ["healthcare", "medical", "innovation"],
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    employees: 750,
-    website: "healthcareinnovations.com",
-  },
-  {
-    id: 4,
-    company: "Financial Advisors LLC",
-    job: "Financial Services",
-    category: "Finance",
-    location: "San Antonio, TX",
-    employeeSize: "11-50",
-    revenue: "1M-5M",
-    keywords: ["finance", "advisory", "investment"],
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    employees: 35,
-    website: "financialadvisors.com",
-  },
-  {
-    id: 5,
-    company: "Construction Masters",
-    job: "Construction Services",
-    category: "Construction",
-    location: "Fort Worth, TX",
-    employeeSize: "101-200",
-    revenue: "20M-50M",
-    keywords: ["construction", "building", "contractor"],
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    employees: 180,
-    website: "constructionmasters.com",
-  },
-  {
-    id: 6,
-    company: "Education Plus",
-    job: "Educational Services",
-    category: "Education",
-    location: "Plano, TX",
-    employeeSize: "51-100",
-    revenue: "5M-10M",
-    keywords: ["education", "learning", "training"],
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    employees: 85,
-    website: "educationplus.com",
-  },
-];
+
 
 const Dashboard = () => {
   const [filters, setFilters] = useState({
@@ -104,18 +21,19 @@ const Dashboard = () => {
     keywords: "",
   });
 
-  const [hasActiveFilters, setHasActiveFilters] = useState(false);
+
   const [openFilter, setOpenFilter] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [savedCompaniesCount, setSavedCompaniesCount] = useState(0);
+
+  // API hooks
+  const [businessSearch, { isLoading: isSearchLoading }] = useBusinessSearchMutation();
+  const [saveCompany] = useSaveCompanyMutation();
 
   const handleFilterChange = (filterType, value) => {
     const newFilters = { ...filters, [filterType]: value };
     setFilters(newFilters);
-
-    // Check if any filter has a value
-    const hasFilters = Object.values(newFilters).some(
-      (filter) => filter.trim() !== ""
-    );
-    setHasActiveFilters(hasFilters);
   };
 
   const toggleFilter = (filterName) => {
@@ -132,35 +50,59 @@ const Dashboard = () => {
       revenue: "",
       keywords: "",
     });
-    setHasActiveFilters(false);
     setOpenFilter(null);
+    setSearchResults([]);
+    setIsSearching(false);
   };
 
-  const filteredData = businessData.filter((business) => {
-    return (
-      (filters.company === "" ||
-        business.company
-          .toLowerCase()
-          .includes(filters.company.toLowerCase())) &&
-      (filters.job === "" ||
-        business.job.toLowerCase().includes(filters.job.toLowerCase())) &&
-      (filters.category === "" ||
-        business.category
-          .toLowerCase()
-          .includes(filters.category.toLowerCase())) &&
-      (filters.location === "" ||
-        business.location
-          .toLowerCase()
-          .includes(filters.location.toLowerCase())) &&
-      (filters.employeeSize === "" ||
-        business.employeeSize === filters.employeeSize) &&
-      (filters.revenue === "" || business.revenue === filters.revenue) &&
-      (filters.keywords === "" ||
-        business.keywords.some((keyword) =>
-          keyword.toLowerCase().includes(filters.keywords.toLowerCase())
-        ))
-    );
-  });
+  // Handle business search
+  const handleSearch = async () => {
+    try {
+      setIsSearching(true);
+
+      // Prepare search data according to API format
+      const searchData = {
+        company_name: filters.company || "",
+        location: filters.location ? [filters.location] : [],
+        category: filters.category || "",
+        company_size: filters.employeeSize || "",
+        previous_results_count: 0
+      };
+
+      console.log('🔍 Searching with data:', searchData);
+
+      const response = await businessSearch(searchData).unwrap();
+      console.log('✅ Search results:', response);
+
+      setSearchResults(response.results || response || []);
+      toast.success(`Found ${response.results?.length || 0} companies`);
+
+    } catch (error) {
+      console.error('❌ Search error:', error);
+      toast.error(error?.data?.message || 'Search failed. Please try again.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Handle save company
+  const handleSaveCompany = async (companyId) => {
+    try {
+      console.log('💾 Saving company:', companyId);
+      await saveCompany(companyId).unwrap();
+      setSavedCompaniesCount(prev => prev + 1); // Increment counter
+      toast.success('Company saved successfully!');
+    } catch (error) {
+      console.error('❌ Save error:', error);
+      if (error.status === 401) {
+        toast.error('Please log in to save companies');
+      } else {
+        toast.error(error?.data?.message || 'Failed to save company');
+      }
+    }
+  };
+
+
 
   return (
     <div className=" bg-gray-50">
@@ -176,9 +118,63 @@ const Dashboard = () => {
               Businesses Search
             </h1>
           </div>
-          <div className="border px-3 py-1 rounded-md text-blue-600 border-black font-medium ">
-            50 Search Credits available
+          <div className="flex space-x-3">
+            <div className="border px-3 py-1 rounded-md text-blue-600 border-black font-medium">
+              50 Search Credits available
+            </div>
+            <div className="border px-3 py-1 rounded-md text-green-600 border-green-500 font-medium">
+              Saved: {savedCompaniesCount} companies
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Debug Panel for Saved Companies */}
+      <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+        <h3 className="font-semibold text-yellow-800 mb-2">🔍 Debug: Saved Companies API</h3>
+        <div className="text-sm space-y-1">
+          <p><strong>Available Endpoint:</strong> /search/company/{`{id}`}/saved/ (check if specific company is saved)</p>
+          <p><strong>Note:</strong> No endpoint found for getting all saved companies</p>
+          <p><strong>Saved Count:</strong> {savedCompaniesCount} (manually tracked)</p>
+          <p><strong>Test:</strong> Use buttons below to test individual company saved status</p>
+        </div>
+        <div className="mt-2 space-x-2">
+          <button
+            onClick={() => {
+              console.log('🔍 Saved Companies Debug:');
+              console.log('Saved Count:', savedCompaniesCount);
+              console.log('Search Results:', searchResults);
+            }}
+            className="px-3 py-1 bg-yellow-500 text-white rounded text-xs"
+          >
+            Log to Console
+          </button>
+
+          <button
+            onClick={async () => {
+              try {
+                console.log('🔄 Testing individual company saved status...');
+                const token = localStorage.getItem('accessToken');
+                const testCompanyId = 1; 
+                const response = await fetch(`https://multiply-mint-ghost.ngrok-free.app/search/company/${testCompanyId}/saved/`, {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                  }
+                });
+                const data = await response.json();
+                console.log(`Company ${testCompanyId} saved status:`, data);
+                toast.info(`Company ${testCompanyId}: ${response.status} - ${JSON.stringify(data)}`);
+              } catch (error) {
+                console.error(' Individual test error:', error);
+                toast.error('Individual test failed');
+              }
+            }}
+            className="px-3 py-1 bg-green-500 text-white rounded text-xs"
+          >
+            Test Company 1 Saved
+          </button>
         </div>
       </div>
 
@@ -240,7 +236,7 @@ const Dashboard = () => {
                 onClick={() => toggleFilter("job")}
                 className="w-full flex items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
               >
-                <span
+                <span  
                   className={`text-[18px] font-medium ${
                     openFilter === "job" ? "text-blue-600" : "text-gray-700"
                   }`}
@@ -503,15 +499,19 @@ const Dashboard = () => {
           </div>
 
           {/* Search Button */}
-          <button className="w-full mt-8 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors font-medium text-xl">
-            Search
+          <button
+            onClick={handleSearch}
+            disabled={isSearchLoading || isSearching}
+            className="w-full mt-8 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors font-medium text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSearchLoading || isSearching ? 'Searching...' : 'Search'}
           </button>
         </div>
 
         {/* Data Display Section */}
         <div className="w-4/5 p-6">
-          {!hasActiveFilters ? (
-            // Show imported image when no filters are active
+          {searchResults.length === 0 && !isSearching ? (
+            // Show imported image when no search results
             <div className="flex flex-col items-center justify-center h-full">
               <img
                 src={img}
@@ -519,15 +519,20 @@ const Dashboard = () => {
                 className="max-w-full max-h-full object-contain"
               />
               <h1 className="text-3xl font-semibold">No Data available</h1>
+              <p className="text-gray-500 mt-2">Use the filters and click Search to find companies</p>
             </div>
           ) : (
-            // Show filtered results
+            // Show search results
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-6 mt-2">
-                Search Results
+                Search Results ({searchResults.length})
               </h2>
 
-              {filteredData.length === 0 ? (
+              {isSearching ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 text-lg">Searching for companies...</p>
+                </div>
+              ) : searchResults.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500 text-lg">
                     No businesses found matching your criteria.
@@ -535,33 +540,32 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredData.map((business) => (
+                  {searchResults.map((business) => (
                     <div
-                      key={business.id}
+                      key={business.id || business.company_name}
                       className="bg-white border border-gray-200 rounded-lg p-6"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4">
                           <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
                             <span className="text-white font-semibold text-lg">
-                              {business.company.charAt(0)}
+                              {(business.company_name || business.company || 'C').charAt(0)}
                             </span>
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                {business.company}
+                                {business.company_name || business.company || 'Unknown Company'}
                               </h3>
                               <div className="flex items-center space-x-2 ml-4">
                                 <MdOutlineLocationOn className="text-gray-500" />
-
                                 <span className="text-gray-500 text-sm">
-                                  {business.location}
+                                  {business.location || business.address || 'Location not available'}
                                 </span>
                               </div>
                             </div>
                             <p className="text-gray-600 text-sm mb-3 leading-relaxed">
-                              {business.description}
+                              {business.description || business.about || 'No description available'}
                             </p>
                           </div>
                         </div>
@@ -570,15 +574,18 @@ const Dashboard = () => {
                         <div className="flex items-center space-x-4 text-sm text-gray-500 pt-5">
                           <span className="flex items-center">
                             <span className="w-4 h-4 mr-1 -mt-2">👥</span>
-                            Employee: {business.employees}
+                            Employees: {business.employee_count || business.employees || 'N/A'}
                           </span>
                           <span className="flex items-center">
                             <span className="w-4 h-4 mr-1 -mt-1">🌐</span>
-                            Website: {business.website}
+                            Website: {business.website || 'N/A'}
                           </span>
                         </div>
                         <div className="flex items-center justify-end space-x-3 mt-4">
-                          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer">
+                          <button
+                            onClick={() => handleSaveCompany(business.id)}
+                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                          >
                             Save
                           </button>
 
@@ -597,6 +604,7 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

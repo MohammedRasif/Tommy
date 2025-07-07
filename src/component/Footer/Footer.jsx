@@ -1,4 +1,5 @@
 import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn } from "react-icons/fa";
+import { NavLink } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -41,9 +42,11 @@ const Footer = () => {
               <a href="#" className="block text-gray-600 text-sm sm:text-[15px] hover:text-blue-600 transition-colors">
                 Learn more
               </a>
-              <a href="#" className="block text-blue-600 text-sm sm:text-[15px] hover:text-blue-700 transition-colors underline">
+              <NavLink to="/contact">
+                <a href="#" className="block text-blue-600 text-sm sm:text-[15px] hover:text-blue-700 transition-colors underline">
                 Contact Us
               </a>
+              </NavLink>
             </div>
           </div>
 
@@ -107,4 +110,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default Footer; 

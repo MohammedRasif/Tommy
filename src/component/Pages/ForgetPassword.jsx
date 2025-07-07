@@ -1,19 +1,46 @@
 
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import img from "../../image/Group 2147226152.png"
 import { useState } from "react"
+import { useForgetPasswordMutation } from "../../Redux/feature/authApi"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const ForgetPassword = () => {
   const [email, setEmail] = useState("")
+  const navigate = useNavigate()
+  const [forgetPassword, { isLoading }] = useForgetPasswordMutation()
 
   const handleInputChange = (e) => {
     setEmail(e.target.value)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Password reset requested for:", email)
-    // Add logic to send reset email and redirect to /forgot-password/verify
+
+    if (!email) {
+      toast.error("Please enter your email address")
+      return
+    }
+
+    try {
+      console.log("Sending password reset request for:", email)
+      const response = await forgetPassword({ email }).unwrap()
+      console.log("Forget password API response:", response)
+
+      toast.success(response.message || "Password reset email sent successfully!")
+      localStorage.setItem("resetEmail", email) // Store email for verification page
+
+      // Navigate to verification page
+      setTimeout(() => {
+        navigate("/forgetPassword_verification")
+      }, 2000)
+
+    } catch (error) {
+      console.error("Forget password error:", error)
+      const errorMessage = error?.data?.message || error?.message || "Failed to send reset email. Please try again."
+      toast.error(errorMessage)
+    }
   }
 
   return (
@@ -75,9 +102,10 @@ const ForgetPassword = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-[#4F46E5] text-white py-2 sm:py-3 px-3 sm:px-4 rounded-sm font-semibold text-xs sm:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors cursor-pointer"
+                disabled={isLoading}
+                className="w-full bg-[#4F46E5] text-white py-2 sm:py-3 px-3 sm:px-4 rounded-sm font-semibold text-xs sm:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Confirm
+                {isLoading ? "Sending..." : "Confirm"}
               </button>
             </form>
 
@@ -93,6 +121,7 @@ const ForgetPassword = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }

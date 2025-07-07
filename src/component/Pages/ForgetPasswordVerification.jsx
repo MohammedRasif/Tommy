@@ -1,9 +1,16 @@
 import img from "../../image/Group 2147226152.png"
 import { useState, useRef } from "react"
+import { useRegisterVerificationMutation, useResendOtpMutation } from "../../Redux/feature/authApi"
+import { useNavigate } from "react-router-dom"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const ForgetPasswordVerification = () => {
   const [verificationCode, setVerificationCode] = useState(["", "", "", ""])
   const inputRefs = useRef([])
+  const [verification] = useRegisterVerificationMutation()
+  const [resendOtp] = useResendOtpMutation()
+  const navigate = useNavigate()
 
   // Handle verification code input
   const handleCodeChange = (index, value) => {
@@ -48,20 +55,85 @@ const ForgetPasswordVerification = () => {
   }
 
   // Handle verification submit
-  const handleVerificationSubmit = (e) => {
+  const handleVerificationSubmit = async (e) => {
     e.preventDefault()
     const code = verificationCode.join("")
-    console.log("Verification code:", code)
+    const email = localStorage.getItem("resetEmail")
+
+    if (!email) {
+      toast.error("No email found! Please restart the password reset process.")
+      return
+    }
+
+    if (code.length !== 4 || !/^\d{4}$/.test(code)) {
+      toast.error("Please enter a valid 4-digit code!")
+      return
+    }
+
+    try {
+      console.log("Sending verification request with:", { email, otp: code })
+      const response = await verification({ email, otp: code }).unwrap()
+      console.log("Verification API response:", response)
+
+      // Store the password reset token for the next step
+      if (response.password_reset_token) {
+        localStorage.setItem("passwordResetToken", response.password_reset_token)
+      }
+
+      toast.success(response.message || "Verification successful!")
+
+      // Navigate to change password page
+      setTimeout(() => {
+        navigate("/change_password")
+      }, 2000)
+    } catch (error) {
+      console.error("Verification error:", error)
+      const errorMessage =
+        error?.data?.message?.toLowerCase().includes("invalid otp")
+          ? "Invalid OTP entered!"
+          : error?.data?.message || error?.message || "Invalid verification code!"
+      toast.error(errorMessage)
+    }
   }
 
-  // Placeholder for resend code
-  const handleResendCode = () => {
-    console.log("Resend code requested")
-    // Add actual resend logic here
+  // Handle resend code
+  const handleResendCode = async () => {
+    const email = localStorage.getItem("resetEmail")
+
+    if (!email) {
+      toast.error("No email found! Please restart the password reset process.")
+      return
+    }
+
+    try {
+      console.log("Sending resend request for:", { email })
+      const response = await resendOtp({ email }).unwrap()
+      console.log("Resend API response:", response)
+
+      toast.success(response.message || "New code sent to your email!")
+    } catch (error) {
+      console.error("Resend error:", error)
+      const errorMessage =
+        error?.data?.message || error?.message || "An error occurred while resending the code."
+      toast.error(errorMessage)
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center roboto bg-[#F7F8F7]">
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }}
+      />
+      <div className="min-h-screen flex items-center justify-center roboto bg-[#F7F8F7]">
       <div className="flex w-full mx-auto">
         {/* Left side - Image */}
         <div className="hidden lg:block w-full lg:w-3/5 bg-gradient-to-br flex items-center justify-center p-4 lg:p-8">
@@ -143,7 +215,8 @@ const ForgetPasswordVerification = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 

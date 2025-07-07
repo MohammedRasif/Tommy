@@ -1,13 +1,18 @@
 
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import img from "../../image/Group 2147226152.png"
 import { useState } from "react"
+import { useConfrimPasswordMutation } from "../../Redux/feature/authApi"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const ChangePassword = () => {
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   })
+  const [confirmPassword, { isLoading }] = useConfrimPasswordMutation()
+  const navigate = useNavigate()
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -17,16 +22,66 @@ const ChangePassword = () => {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Change Password:", formData)
-    // Add logic to update password and redirect to /login
+
+    if (!formData.password || !formData.confirmPassword) {
+      toast.error("Please fill in all fields")
+      return
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match!")
+      return
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long")
+      return
+    }
+
+    const email = localStorage.getItem("resetEmail")
+    const passwordResetToken = localStorage.getItem("passwordResetToken")
+
+    if (!email) {
+      toast.error("No email found! Please restart the password reset process.")
+      return
+    }
+
+    if (!passwordResetToken) {
+      toast.error("No reset token found! Please restart the password reset process.")
+      return
+    }
+
+    try {
+      console.log("Sending password reset request for:", email)
+      const response = await confirmPassword({
+        email: email,
+        password_reset_token: passwordResetToken,
+        new_password: formData.password
+      }).unwrap()
+      console.log("Password reset API response:", response)
+
+      toast.success(response.message || "Password reset successfully!")
+      localStorage.removeItem("resetEmail") 
+      localStorage.removeItem("passwordResetToken") 
+
+      
+      setTimeout(() => {
+        navigate("/login")
+      }, 2000)
+    } catch (error) {
+      console.error("Password reset error:", error)
+      const errorMessage =
+        error?.data?.message || error?.message || "Failed to reset password. Please try again."
+      toast.error(errorMessage)
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center roboto bg-[#F7F8F7]">
       <div className="flex w-full mx-auto">
-        {/* Left side - Image */}
+        
         <div className="hidden sm:block w-3/5 bg-gradient-to-br flex items-center justify-center p-8">
           <img
             src={img || "/placeholder.svg"}
@@ -35,7 +90,7 @@ const ChangePassword = () => {
           />
         </div>
 
-        {/* Right side - Form */}
+        
         <div className="w-full sm:w-2/5 p-8 flex flex-col justify-center">
           <div className="max-w-full mx-auto w-full">
             <h1 className="text-3xl sm:text-5xl font-bold text-[#454D3C] mb-8 text-center">
@@ -43,7 +98,7 @@ const ChangePassword = () => {
             </h1>
 
             <form onSubmit={handleSubmit} className="space-y-6 px-4 sm:px-32">
-              {/* New Password Field */}
+              
               <div>
                 <label className="block text-xs sm:text-sm text-gray-700 mb-2 font-semibold">
                   New Password
@@ -76,7 +131,7 @@ const ChangePassword = () => {
                 </div>
               </div>
 
-              {/* Confirm Password Field */}
+              
               <div>
                 <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                   Confirm Password
@@ -112,9 +167,10 @@ const ChangePassword = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-[#4F46E5] text-white py-2 sm:py-3 px-3 sm:px-4 rounded-sm font-semibold text-xs sm:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors cursor-pointer"
+                disabled={isLoading}
+                className="w-full bg-[#4F46E5] text-white py-2 sm:py-3 px-3 sm:px-4 rounded-sm font-semibold text-xs sm:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save
+                {isLoading ? "Saving..." : "Save"}
               </button>
             </form>
 
@@ -130,6 +186,18 @@ const ChangePassword = () => {
           </div>
         </div>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }}
+      />
     </div>
   )
 }

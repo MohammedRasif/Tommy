@@ -1,125 +1,171 @@
-import { NavLink } from "react-router-dom"
-import img from "../../image/Group 2147226152.png"
-import { useState } from "react"
+import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { useLoginMutation, useRegisterMutation } from "../../Redux/feature/authApi";
+import { setUser } from "../../Redux/authSlice";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import img from "../../image/Group 2147226152.png";
 
 const Login = () => {
+  const dispatch = useDispatch();
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
+  const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
-  })
-
-  const [isLogin, setIsLogin] = useState(true) // Default to login mode
+  });
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     if (isLogin) {
-      console.log("Login:", { email: formData.email, password: formData.password })
+      try {
+        console.log("Sending login request:", { email: formData.email, password: formData.password });
+        const response = await login({
+          email: formData.email,
+          password: formData.password,
+        }).unwrap();
+        console.log("Login API response:", response);
+
+        toast.success(response.message || "Login successful!");
+        if (response.access) {
+          localStorage.setItem("accessToken", response.access);
+          localStorage.setItem("refreshToken", response.refresh);
+
+          // Dispatch token to Redux store
+          dispatch(setUser({ accessToken: response.access }));
+        }
+        setTimeout(() => navigate("/dashboard"), 3000);
+      } catch (err) {
+        console.error("Login error:", err);
+        const errorMessage =
+          err?.data?.message || err?.data?.error || "Login failed. Please try again.";
+        toast.error(errorMessage);
+      }
     } else {
-      console.log("Register:", formData)
+      if (formData.password !== formData.confirmPassword) {
+        toast.error("Passwords do not match!");
+        return;
+      }
+
+      try {
+        console.log("Sending registration request:", {
+          email: formData.email,
+          password: formData.password,
+        });
+        const response = await register({
+          email: formData.email,
+          password: formData.password,
+        }).unwrap();
+        console.log("Registration API response:", response);
+
+        toast.success(response.message || "Registration successful!");
+        localStorage.setItem("email", formData.email);
+        setTimeout(() => navigate("/register_verification"), 3000);
+      } catch (err) {
+        console.error("Registration error:", err);
+        const errorMessage =
+          err?.data?.message?.toLowerCase().includes("email already exists")
+            ? "Email already exists!"
+            : err?.data?.message || err?.data?.error || "Registration failed. Please try again.";
+        toast.error(errorMessage);
+      }
     }
-  }
+  };
 
   const toggleMode = () => {
-    setIsLogin(!isLogin)
-    setFormData({ email: "", password: "", confirmPassword: "" })
-  }
+    setIsLogin(!isLogin);
+    setFormData({ email: "", password: "", confirmPassword: "" });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center roboto bg-[#F7F8F7]">
-      <div className="flex w-full mx-auto">
-        {/* Left side - Image */}
-        <div className="hidden lg:block w-full lg:w-3/5 bg-gradient-to-br flex items-center justify-center p-4 lg:p-8">
-          <img src={img} alt="Demo AI Illustration" className="max-w-full h-auto" />
-        </div>
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }}
+      />
+      <div className="min-h-screen flex items-center justify-center roboto bg-[#F7F8F7]">
+        <div className="flex w-full mx-auto">
+          {/* Left side - Image */}
+          <div className="hidden lg:block w-full lg:w-3/5 bg-gradient-to-br flex items-center justify-center p-4 lg:p-8">
+            <img src={img} alt="Demo AI Illustration" className="max-w-full h-auto" />
+          </div>
 
-        {/* Right side - Form */}
-        <div className="w-full lg:w-2/5 p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
-          <div className="max-w-full mx-auto w-full">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#454D3C] mb-6 sm:mb-8 text-center">
-              Welcome to Demo. AI
-            </h1>
+          {/* Right side - Form */}
+          <div className="w-full lg:w-2/5 p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
+            <div className="max-w-full mx-auto w-full">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#454D3C] mb-6 sm:mb-8 text-center">
+                {isLogin ? "Login to OpenSeason.ai" : "Create Account OpenSeason.ai"}
+              </h1>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 px-4 sm:px-16 lg:px-32">
-              {/* Email Field */}
-              <div>
-                <label className="block text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2 font-semibold">
-                  Email
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
-                    <svg
-                      className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 px-4 sm:px-16 lg:px-32">
+                {/* Email Field */}
+                <div>
+                  <label className="block text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2 font-semibold">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+                      <svg
+                        className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="user@mail.com"
+                      className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-[10px] border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-xs sm:text-sm"
+                      required
+                    />
                   </div>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="user@mail.com"
-                    className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-[10px] border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-xs sm:text-sm"
-                    required
-                  />
                 </div>
-              </div>
 
-              {/* Password Field */}
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
-                    <svg
-                      className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="Password"
-                    className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-[10px] border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-xs sm:text-sm"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Confirm Password Field (only for Register) */}
-              {!isLogin && (
+                {/* Password Field */}
                 <div>
                   <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
-                    Confirm Password
+                    Password
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
@@ -138,50 +184,145 @@ const Login = () => {
                       </svg>
                     </div>
                     <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
                       onChange={handleInputChange}
-                      placeholder="Confirm Password"
-                      className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-[10px] border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-xs sm:text-sm"
+                      placeholder="Password"
+                      className="w-full pl-8 sm:pl-10 pr-10 sm:pr-12 py-2 sm:py-[10px] border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-xs sm:text-sm"
                       required
                     />
+                    <div
+                      className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center cursor-pointer"
+                      onClick={togglePasswordVisibility}
+                    >
+                      <svg
+                        className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        {showPassword ? (
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.79m0 0L21 21"
+                          />
+                        ) : (
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm-12.542 0c1.274-4.057 5.064-7 9.542-7 4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        )}
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {/* Forgot Password */}
-              {isLogin && (
-                <NavLink to="/forgot-password" className="block text-[10px] sm:text-[12px] text-blue-500 underline text-end -mt-3 sm:-mt-4 mb-4 sm:mb-5 cursor-pointer">
-                  Forgot Password?
-                </NavLink>
-              )}
+                {/* Confirm Password Field (only for Register) */}
+                {!isLogin && (
+                  <div>
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+                        <svg
+                          className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                          />
+                        </svg>
+                      </div>
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        placeholder="Confirm Password"
+                        className="w-full pl-8 sm:pl-10 pr-10 sm:pr-12 py-2 sm:py-[10px] border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-xs sm:text-sm"
+                        required
+                      />
+                      <div
+                        className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center cursor-pointer"
+                        onClick={toggleConfirmPasswordVisibility}
+                      >
+                        <svg
+                          className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          {showConfirmPassword ? (
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.79m0 0L21 21"
+                            />
+                          ) : (
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm-12.542 0c1.274-4.057 5.064-7 9.542-7 4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064-7-9.542-7-4.477 0-8.268 2.943-9.542 7z"
+                            />
+                          )}
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full bg-[#4F46E5] text-white py-2 sm:py-3 px-3 sm:px-4 rounded-sm font-semibold text-sm sm:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors cursor-pointer"
-              >
-                {isLogin ? "Login" : "Register"}
-              </button>
+                {/* Forgot Password */}
+                {isLogin && (
+                  <NavLink
+                    to="/forgot-password"
+                    className="block text-[10px] sm:text-[12px] text-blue-500 underline text-end -mt-3 sm:-mt-4 mb-4 sm:mb-5 cursor-pointer"
+                  >
+                    Forgot Password?
+                  </NavLink>
+                )}
 
-              {/* Toggle between Login/Register */}
-              <div className="text-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
-                <span className="text-gray-600">{isLogin ? "Don't have an account?" : "Already have an account?"}</span>
+                {/* Submit Button */}
                 <button
-                  type="button"
-                  onClick={toggleMode}
-                  className="text-blue-600 hover:text-blue-800 font-medium transition-colors border rounded-sm px-1.5 sm:px-2 py-0.5 cursor-pointer"
+                  type="submit"
+                  className="w-full bg-[#4F46E5] text-white py-2 sm:py-3 px-3 sm:px-4 rounded-sm font-semibold text-sm sm:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors cursor-pointer"
+                  disabled={isLoginLoading || isRegisterLoading}
                 >
-                  {isLogin ? "Register" : "Login"}
+                  {isLoginLoading || isRegisterLoading ? "Processing..." : isLogin ? "Login" : "Register"}
                 </button>
-              </div>
-            </form>
+
+                {/* Toggle between Login/Register */}
+                <div className="text-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
+                  <span className="text-gray-600">
+                    {isLogin ? "Don't have an account?" : "Already have an account?"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={toggleMode}
+                    className="text-blue-600 hover:text-blue-800 font-medium transition-colors border rounded-sm px-1.5 sm:px-2 py-0.5 cursor-pointer"
+                  >
+                    {isLogin ? "Register" : "Login"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
-}
+    </>
+  );
+};
 
-export default Login
+export default Login;
