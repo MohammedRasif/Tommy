@@ -13,6 +13,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/vite": "^4.0.9",
     "localforage": "^1.10.0",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.515.0",
     "match-sorter": "^8.0.0",
     "react": "^19.0.0",

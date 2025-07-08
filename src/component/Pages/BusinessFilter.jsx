@@ -1,14 +1,24 @@
-"use client"
+import { debounce } from "lodash"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { NavLink } from "react-router-dom"
+import { useBusinessSearchMutation, useGetCountryOptionsQuery } from "../../Redux/feature/ApiSlice"
 
 const BusinessFilter = () => {
+    // API hooks
+    const [searchCompany, { isLoading: isSearching }] = useBusinessSearchMutation()
+    const { data: countryOptions, isLoading: isLoadingCountries, error: countryError } = useGetCountryOptionsQuery()
+
+    // Form states
     const [showFilters, setShowFilters] = useState(false)
     const [selectedEmployeeSize, setSelectedEmployeeSize] = useState("")
     const [searchKeywords, setSearchKeywords] = useState("")
     const [location, setLocation] = useState("")
     const [category, setCategory] = useState("")
+
+    // Search results state
+    const [searchResults, setSearchResults] = useState([])
+    const [showResults, setShowResults] = useState(false)
 
     const employeeSizeOptions = [
         { value: "2-10", label: "2-10" },
@@ -19,60 +29,137 @@ const BusinessFilter = () => {
         { value: "1000+", label: "1000+" },
     ]
 
+    // Debug country options
+    useEffect(() => {
+        if (countryOptions) {
+            console.log('🌍 Country options loaded:', countryOptions)
+        }
+        if (countryError) {
+            console.error('❌ Country options error:', countryError)
+        }
+    }, [countryOptions, countryError])
+
+    const categoryOptions = [
+        "Technology",
+        "Healthcare",
+        "Finance",
+        "Education",
+        "Manufacturing",
+        "Retail",
+        "Real Estate",
+        "Consulting",
+        "Marketing",
+        "Other"
+    ]
+
+    // Debounced search function
+    const debouncedSearch = useCallback(
+        debounce(async (searchData) => {
+            try {
+                console.log('🔍 Real-time searching with data:', searchData)
+                const response = await searchCompany(searchData).unwrap()
+                console.log('✅ Search API response:', response)
+                
+                if (response && response.results) {
+                    setSearchResults(response.results)
+                    setShowResults(true)
+                } else if (Array.isArray(response)) {
+                    setSearchResults(response)
+                    setShowResults(true)
+                } else {
+                    console.log('⚠️ Unexpected response format:', response)
+                    setSearchResults([])
+                    setShowResults(false)
+                }
+            } catch (error) {
+                console.error('❌ Search error:', error)
+                setSearchResults([])
+                setShowResults(false)
+            }
+        }, 300), // 300ms delay for real-time feel
+        [searchCompany]
+    )
+
+    // Effect to trigger real-time search
+    useEffect(() => {
+        console.log('🔍 Search effect triggered:', { searchKeywords, location, category, selectedEmployeeSize })
+
+        // Only search if there's a search term (at least 2 characters) AND a country is selected
+        if (searchKeywords.trim().length >= 2 && location) {
+            const searchData = {
+                company_name: searchKeywords,
+                location: [location],
+                category: category,
+                company_size: selectedEmployeeSize,
+                previous_results_count: 0
+            }
+            console.log('📤 About to search with data:', searchData)
+            debouncedSearch(searchData)
+        } else {
+            // Clear results if search term is too short or no country selected
+            if (searchKeywords.trim().length < 2) {
+                console.log('❌ Search term too short, clearing results')
+            } else if (!location) {
+                console.log('❌ No country selected, clearing results')
+            }
+            setSearchResults([])
+            setShowResults(false)
+        }
+    }, [searchKeywords, location, category, selectedEmployeeSize, debouncedSearch])
+
     const handleReset = () => {
         setSearchKeywords("")
         setLocation("")
         setCategory("")
         setSelectedEmployeeSize("")
-    }
-
-    const handleSearch = () => {
-        const searchData = {
-            keywords: searchKeywords,
-            location: location,
-            category: category,
-            employeeSize: selectedEmployeeSize,
-        }
-        console.log("Search data:", searchData)
-        alert("Search functionality triggered! Check console for data.")
+        setSearchResults([])
+        setShowResults(false)
     }
 
     return (
-        <div className="min-h-screen pt-16 sm:pt-20">
-            <div className="py-6 sm:py-8 pb-16 sm:pb-32 text-center">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold pb-2">
-                    Find the Right Business Partner for Your Goals
-                </h1>
-                <p className="text-sm sm:text-base lg:text-md font-medium text-gray-600 max-w-2xl mx-auto">
-                    Discover companies and professionals that align with your vision—perfect for strategic outreach and collaboration.
-                </p>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            {/* Hero Section */}
+            <div className="relative bg-gradient-to-r from-blue-600 to-purple-700 text-white">
+                <div className="absolute inset-0 bg-black opacity-10"></div>
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+                    <div className="text-center">
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6">
+                            Find Your Perfect
+                            <span className="block text-yellow-300">Business Partners</span>
+                        </h1>
+                        <p className="text-sm sm:text-base lg:text-md font-medium text-gray-600 max-w-2xl mx-auto">
+                            Discover companies and professionals that align with your vision—perfect for strategic outreach and collaboration.
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div className="container mx-auto px-4 bg-white">
-                {/* Top Search Row */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    {/* Search Keywords */}
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
+
+            {/* Search Section */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-12 relative z-10">
+                <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-10">
+                    {/* Search Input */}
+                    <div className="relative mb-6">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
                         <input
                             type="text"
-                            placeholder="Search for Business or keywords"
+                            placeholder="Search for companies, industries, or keywords..."
                             value={searchKeywords}
                             onChange={(e) => setSearchKeywords(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base"
+                            className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
                         />
+                        {isSearching && (
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Location */}
-                    <div className="relative">
+                    {/* Location (Country) */}
+                    <div className="relative mb-6">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
@@ -81,143 +168,66 @@ const BusinessFilter = () => {
                                     strokeWidth={2}
                                     d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                                 />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 616 0z" />
                             </svg>
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Enter Location (City, State, Country etc)"
+                        <select
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base"
-                        />
-                    </div>
-                </div>
-
-                {/* Filter Toggle and Reset Row */}
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 sm:gap-0">
-                    <button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium cursor-pointer text-sm sm:text-base"
-                    >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                            />
-                        </svg>
-                        {showFilters ? "Hide filters" : "Show filters"}
-                        <svg
-                            className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base appearance-none bg-white"
+                            disabled={isLoadingCountries}
                         >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-
-                    <button onClick={handleReset} className="text-gray-500 hover:text-gray-700 font-medium text-sm sm:text-base">
-                        Reset
-                    </button>
-                </div>
-
-                {/* Additional Filters (Collapsible) */}
-                {showFilters && (
-                    <div className="grid grid-cols-2 gap-4 mb-6 animate-in slide-in-from-top duration-300">
-                        {/* Category */}
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                   18                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                    />
-                                </svg>
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Categories the industry (Ex. Real estate, food etc)"
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base"
-                            />
-                        </div>
-
-                        {/* Employee Size Dropdown */}
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                    />
-                                </svg>
-                            </div>
-                            <select
-                                value={selectedEmployeeSize}
-                                onChange={(e) => setSelectedEmployeeSize(e.target.value)}
-                                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none bg-white text-sm sm:text-base"
-                            >
-                                <option value="">Employee size</option>
-                                {employeeSizeOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        {/* Employee Size Options Display */}
-                        <div>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {employeeSizeOptions.map((option) => (
-                                    <button
-                                        key={option.value}
-                                        onClick={() => setSelectedEmployeeSize(option.value)}
-                                        className={`px-3 py-1 text-xs sm:text-sm rounded-full border transition-colors ${
-                                            selectedEmployeeSize === option.value
-                                                ? "bg-blue-600 text-white border-blue-600"
-                                                : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                                        }`}
-                                    >
-                                        {option.label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Search Button */}
-                <div className="flex justify-center">
-                    <NavLink to="/business_Partner">
-                        <button
-                            onClick={handleSearch}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 sm:px-8 py-3 rounded-lg transition-colors flex items-center gap-2 cursor-pointer text-sm sm:text-base"
-                        >
-                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
+                            <option value="">Select Country</option>
+                            {isLoadingCountries ? (
+                                <option disabled>Loading countries...</option>
+                            ) : (
+                                countryOptions && Array.isArray(countryOptions.options) ? (
+                                    countryOptions.options.map((country, index) => (
+                                        <option key={index} value={country}>
+                                            {country}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <option disabled>No countries available</option>
+                                )
+                            )}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
-                            Search Business
+                        </div>
+                    </div>
+
+
+
+                    {/* Reset Button */}
+                    <div className="mt-6">
+                        <button
+                            onClick={handleReset}
+                            className="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                        >
+                            Reset All Filters
                         </button>
-                    </NavLink>
+                    </div>
+
+                    {/* Search Results */}
+                    {showResults && searchResults.length > 0 && (
+                        <div className="mt-8">
+                            <h3 className="text-lg font-semibold mb-4">Search Results ({searchResults.length})</h3>
+                            <div className="space-y-4">
+                                {searchResults.map((company, index) => (
+                                    <div key={index} className="bg-gray-50 p-4 rounded-lg border">
+                                        <h4 className="font-medium text-gray-900">{company.name || company.company_name || 'Unknown Company'}</h4>
+                                        <p className="text-sm text-gray-600 mt-1">{company.description || company.industry || 'No description available'}</p>
+                                        {company.location && (
+                                            <p className="text-xs text-gray-500 mt-2">📍 {company.location}</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,10 +1,10 @@
 import { IoBusinessSharp } from "react-icons/io5";
 import img from "../../../image/Layer 1.png";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { NavLink } from "react-router-dom";
-import { useBusinessSearchMutation, useSaveCompanyMutation } from "../../../Redux/feature/ApiSlice";
+import { useBusinessSearchMutation, useSaveCompanyMutation, useGetCountryOptionsQuery } from "../../../Redux/feature/ApiSlice";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -30,6 +30,17 @@ const Dashboard = () => {
   // API hooks
   const [businessSearch, { isLoading: isSearchLoading }] = useBusinessSearchMutation();
   const [saveCompany] = useSaveCompanyMutation();
+  const { data: countryOptions, isLoading: isLoadingCountries, error: countryError } = useGetCountryOptionsQuery();
+
+  // Debug country options
+  useEffect(() => {
+    if (countryOptions) {
+      console.log('🌍 Dashboard - Country options loaded:', countryOptions);
+    }
+    if (countryError) {
+      console.error('❌ Dashboard - Country options error:', countryError);
+    }
+  }, [countryOptions, countryError]);
 
   const handleFilterChange = (filterType, value) => {
     const newFilters = { ...filters, [filterType]: value };
@@ -60,10 +71,17 @@ const Dashboard = () => {
     try {
       setIsSearching(true);
 
+      // Validate that a country is selected
+      if (!filters.location) {
+        toast.error('Please select a country to search');
+        setIsSearching(false);
+        return;
+      }
+
       // Prepare search data according to API format
       const searchData = {
         company_name: filters.company || "",
-        location: filters.location ? [filters.location] : [],
+        location: [filters.location],
         category: filters.category || "",
         company_size: filters.employeeSize || "",
         previous_results_count: 0
@@ -350,14 +368,22 @@ const Dashboard = () => {
                     handleFilterChange("location", e.target.value)
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-0 focus:ring-blue-500 bg-gray-50"
+                  disabled={isLoadingCountries}
                 >
-                  <option value="">Enter here</option>
-                  <option value="Austin, TX">Austin, TX</option>
-                  <option value="Dallas, TX">Dallas, TX</option>
-                  <option value="Houston, TX">Houston, TX</option>
-                  <option value="San Antonio, TX">San Antonio, TX</option>
-                  <option value="Fort Worth, TX">Fort Worth, TX</option>
-                  <option value="Plano, TX">Plano, TX</option>
+                  <option value="">Select Country</option>
+                  {isLoadingCountries ? (
+                    <option disabled>Loading countries...</option>
+                  ) : (
+                    countryOptions && Array.isArray(countryOptions.options) ? (
+                      countryOptions.options.map((country, index) => (
+                        <option key={index} value={country}>
+                          {country}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>No countries available</option>
+                    )
+                  )}
                 </select>
               </div>
             </div>
@@ -406,7 +432,7 @@ const Dashboard = () => {
                   <option value="51-200">51-200</option>
                   <option value="101-200">101-200</option>
                   <option value="201-500">201-500</option>
-                  <option value="501-1000">501-1000</option>
+                
                 </select>
               </div>
             </div>

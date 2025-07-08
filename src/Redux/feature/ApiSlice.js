@@ -175,6 +175,37 @@ export const ApiSlice = createApi({
             }),
         }),
 
+        getSubscriptionPlans: builder.query({
+            query: () => "/subscriptions/plans/",
+            providesTags: ['subscription']
+        }),
+
+        subscribeToplan: builder.mutation({
+            query: (data) => ({
+                url: "/subscriptions/subscribe/",
+                method: "POST",
+                body: data
+            }),
+            invalidatesTags: ['subscription']
+        }),
+
+        searchcompany: builder.mutation({
+            query: (data) => ({
+                url: "/search/search-company",
+                method: "POST",
+                body: data
+            })
+        }),
+
+        getCountryOptions: builder.query({
+            query: () => ({
+                url: "/search/get_country_options/?location_path=[]",
+                method: "GET"
+            }),
+        }),
+
+
+
 
     }),
 });
@@ -201,4 +232,10 @@ export const {
     useSaveCompanyMutation,
     useGetSavedCompanyQuery,
     useGoogleConnectMutation,
+    useGetSubscriptionPlansQuery,
+    useSubscribeToplanMutation,
+    useSearchcompanyMutation,
+    useGetCountryOptionsQuery,
+
+
 } = ApiSlice;

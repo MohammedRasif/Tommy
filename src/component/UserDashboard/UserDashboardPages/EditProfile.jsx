@@ -22,7 +22,6 @@ function EditProfile() {
     postalCode: "",
     country: "",
     phoneHome: "",
-    // Company Profile fields
     companyName: "",
     companyLocation: "",
     companyWebsite: "",
@@ -67,7 +66,6 @@ function EditProfile() {
     }
   }
 
-  // Try manual fetch if RTK Query fails
   useEffect(() => {
     if (profileError) {
       console.log('🔄 RTK Query failed, trying manual fetch...')
@@ -75,7 +73,6 @@ function EditProfile() {
     }
   }, [profileError])
 
-  // Also try manual fetch on component mount if no data after 2 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!profileData && !isLoadingProfile && !manualProfileData) {
@@ -87,7 +84,6 @@ function EditProfile() {
     return () => clearTimeout(timer)
   }, [profileData, isLoadingProfile, manualProfileData])
 
-  // Function to populate form data
   const populateFormData = (data) => {
     if (!data) return
 

@@ -1,102 +1,83 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
+import { useSearchcompanyMutation } from "../../Redux/feature/ApiSlice"
 
 const BusinessPartner = () => {
-  const [companies] = useState([
-    {
-      id: 1,
-      name: "Creative Institute",
-      description: "Creative It is a institution providing innovative hiring solution",
-      location: "Austin, Tx",
-      category: "Education",
-      size: "Small (1-50)",
-      website: "Website.com",
-      avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529177/samples/look-up.jpg",
-    },
-    {
-      id: 2,
-      name: "Tech Solutions",
-      description: "Leading technology company providing cutting-edge solutions",
-      location: "Dallas, Tx",
-      category: "Technology",
-      size: "Medium (51-200)",
-      website: "techsolutions.com",
-      avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529178/samples/man-on-a-escalator.jpg",
-    },
-    {
-      id: 3,
-      name: "Marketing Pro",
-      description: "Professional marketing agency helping businesses grow",
-      location: "Houston, Tx",
-      category: "Marketing",
-      size: "Small (1-50)",
-      website: "marketingpro.com",
-      avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529178/samples/outdoor-woman.jpg",
-    },
-    {
-      id: 4,
-      name: "Health Care Plus",
-      description: "Comprehensive healthcare services for modern families",
-      location: "San Antonio, Tx",
-      category: "Healthcare",
-      size: "Large (200+)",
-      website: "healthcareplus.com",
-      avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529178/samples/man-portrait.jpg",
-    },
-    {
-      id: 5,
-      name: "Finance Expert",
-      description: "Expert financial consulting and investment services",
-      location: "Austin, Tx",
-      category: "Finance",
-      size: "Medium (51-200)",
-      website: "financeexpert.com",
-      avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529179/samples/woman-on-a-football-field.jpg",
-    },
-    {
-      id: 6,
-      name: "Design Studio",
-      description: "Creative design studio specializing in brand identity",
-      location: "Dallas, Tx",
-      category: "Design",
-      size: "Small (1-50)",
-      website: "designstudio.com",
-      avatar: "https://res.cloudinary.com/dfsu0cuvb/image/upload/v1737529179/samples/woman-on-a-football-field.jpg",
-    },
-  ])
+  // API hook for company search
+  const [searchCompany, { isLoading: isSearching }] = useSearchcompanyMutation()
+
+  // State for companies and search
+  const [companies, setCompanies] = useState([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   // Filter states
   const [filters, setFilters] = useState({
     category: "",
     location: "",
-    minSize: "",
-    maxSize: "",
+    company_size: "",
   })
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce(async (searchData) => {
+      try {
+        console.log('🔍 Searching with data:', searchData)
+        const response = await searchCompany(searchData).unwrap()
+        console.log('✅ Search results:', response)
+
+        // Handle different response formats
+        const results = response.results || response.companies || response || []
+        setCompanies(Array.isArray(results) ? results : [])
+        setIsInitialLoad(false)
+      } catch (error) {
+        console.error('❌ Search failed:', error)
+        setCompanies([])
+        setIsInitialLoad(false)
+      }
+    }, 500),
+    [searchCompany]
+  )
+
+  // Debounce utility function
+  function debounce(func, wait) {
+    let timeout
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout)
+        func(...args)
+      }
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
+    }
+  }
 
   // Selection states
   const [selectedCompanies, setSelectedCompanies] = useState(new Set())
   const [viewBy, setViewBy] = useState("Name")
   const [isFilterOpen, setIsFilterOpen] = useState(false) // Mobile filter toggle
 
-  // Filter companies based on current filters
+  // Effect to trigger search when searchTerm or filters change
+  useEffect(() => {
+    const searchData = {
+      company_name: searchTerm,
+      location: filters.location ? [filters.location] : [],
+      category: filters.category,
+      company_size: filters.company_size,
+    }
+
+    // Only search if there's a search term or any filter is applied
+    if (searchTerm.trim() || filters.category || filters.location || filters.company_size) {
+      debouncedSearch(searchData)
+    } else if (!isInitialLoad) {
+      // Clear results if no search criteria
+      setCompanies([])
+    }
+  }, [searchTerm, filters, debouncedSearch, isInitialLoad])
+
+  // Since we're getting filtered results from API, just return companies
   const filteredCompanies = useMemo(() => {
-    return companies.filter((company) => {
-      const matchesCategory =
-        !filters.category || company.category.toLowerCase().includes(filters.category.toLowerCase())
-      const matchesLocation =
-        !filters.location || company.location.toLowerCase().includes(filters.location.toLowerCase())
-
-      // Simple size filtering
-      let matchesSize = true
-      if (filters.minSize || filters.maxSize) {
-        const sizeNum = company.size.includes("Small") ? 25 : company.size.includes("Medium") ? 125 : 300
-        const min = filters.minSize ? Number.parseInt(filters.minSize) : 0
-        const max = filters.maxSize ? Number.parseInt(filters.maxSize) : 1000
-        matchesSize = sizeNum >= min && sizeNum <= max
-      }
-
-      return matchesCategory && matchesLocation && matchesSize
-    })
-  }, [companies, filters])
+    return companies
+  }, [companies])
 
   // Handle filter changes
   const handleFilterChange = (filterType, value) => {
@@ -111,9 +92,10 @@ const BusinessPartner = () => {
     setFilters({
       category: "",
       location: "",
-      minSize: "",
-      maxSize: "",
+      company_size: "",
     })
+    setSearchTerm("")
+    setCompanies([])
     setIsFilterOpen(false) // Close filter on mobile
   }
 
