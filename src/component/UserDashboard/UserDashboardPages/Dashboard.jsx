@@ -4,43 +4,78 @@ import img from "../../../image/Layer 1.png";
 import { useState, useEffect } from "react";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { NavLink } from "react-router-dom";
-import { useBusinessSearchMutation, useSaveCompanyMutation, useGetCountryOptionsQuery } from "../../../Redux/feature/ApiSlice";
+import { useBusinessSearchMutation, useSaveCompanyMutation, useGetCountryOptionsMutation } from "../../../Redux/feature/ApiSlice";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 
 
 const Dashboard = () => {
-  const [filters, setFilters] = useState({
-    company: "",
-    job: "",
-    category: "",
-    location: "",
-    employeeSize: "",
-    revenue: "",
-    keywords: "",
+  // Initialize state from localStorage or defaults
+  const [filters, setFilters] = useState(() => {
+    const savedFilters = localStorage.getItem('dashboardFilters');
+    return savedFilters ? JSON.parse(savedFilters) : {
+      company: "",
+      job: "",
+      category: "",
+      location: "",
+      employeeSize: "",
+      revenue: "",
+      keywords: "",
+    };
   });
 
-
   const [openFilter, setOpenFilter] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState(() => {
+    const savedResults = localStorage.getItem('dashboardSearchResults');
+    return savedResults ? JSON.parse(savedResults) : [];
+  });
   const [isSearching, setIsSearching] = useState(false);
   const [savedCompaniesCount, setSavedCompaniesCount] = useState(0);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
 
   // API hooks
   const [businessSearch, { isLoading: isSearchLoading }] = useBusinessSearchMutation();
   const [saveCompany] = useSaveCompanyMutation();
-  const { data: countryOptions, isLoading: isLoadingCountries, error: countryError } = useGetCountryOptionsQuery();
+  const [getCountryOptions, { isLoading: isLoadingCountries }] = useGetCountryOptionsMutation();
 
-  // Debug country options
+  // Country options state
+  const [countryOptions, setCountryOptions] = useState([]);
+
+  // Load countries on component mount
   useEffect(() => {
-    if (countryOptions) {
-      console.log('🌍 Dashboard - Country options loaded:', countryOptions);
+    loadCountries();
+  }, [getCountryOptions]);
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('dashboardFilters', JSON.stringify(filters));
+  }, [filters]);
+
+  // Save search results to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('dashboardSearchResults', JSON.stringify(searchResults));
+  }, [searchResults]);
+
+  // Function to load countries
+  const loadCountries = async () => {
+    try {
+      console.log('🌍 Dashboard - Loading countries...');
+      const response = await getCountryOptions().unwrap();
+      console.log('🌍 Dashboard - Country options response:', response);
+
+      if (response && response.options && Array.isArray(response.options)) {
+        setCountryOptions(response.options);
+        console.log('🌍 Dashboard - Countries loaded:', response.options);
+      } else {
+        console.log('⚠️ Dashboard - Unexpected country response format:', response);
+        setCountryOptions([]);
+      }
+    } catch (error) {
+      console.error('❌ Dashboard - Failed to load countries:', error);
+      setCountryOptions([]);
     }
-    if (countryError) {
-      console.error('❌ Dashboard - Country options error:', countryError);
-    }
-  }, [countryOptions, countryError]);
+  };
 
   const handleFilterChange = (filterType, value) => {
     const newFilters = { ...filters, [filterType]: value };
@@ -51,8 +86,9 @@ const Dashboard = () => {
     setOpenFilter(openFilter === filterName ? null : filterName);
   };
 
+  // Reset filters - only clears results when explicitly called by user
   const resetFilters = () => {
-    setFilters({
+    const defaultFilters = {
       company: "",
       job: "",
       category: "",
@@ -60,11 +96,35 @@ const Dashboard = () => {
       employeeSize: "",
       revenue: "",
       keywords: "",
-    });
+    };
+    setFilters(defaultFilters);
     setOpenFilter(null);
-    setSearchResults([]);
+    setSearchResults([]); // Only clear results on explicit reset
     setIsSearching(false);
+    setExpandedDescriptions({}); // Clear expanded descriptions on reset
+
+    // Clear localStorage
+    localStorage.removeItem('dashboardFilters');
+    localStorage.removeItem('dashboardSearchResults');
   };
+
+  // Helper function to truncate description to 90 words
+  const truncateDescription = (description, wordLimit = 90) => {
+    if (!description) return 'No description available';
+    const words = description.split(' ');
+    if (words.length <= wordLimit) return description;
+    return words.slice(0, wordLimit).join(' ') + '...';
+  };
+
+  // Toggle description expansion
+  const toggleDescription = (businessId) => {
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [businessId]: !prev[businessId]
+    }));
+  };
+
+
 
   // Handle business search
   const handleSearch = async () => {
@@ -92,8 +152,21 @@ const Dashboard = () => {
       const response = await businessSearch(searchData).unwrap();
       console.log('✅ Search results:', response);
 
-      setSearchResults(response.results || response || []);
-      toast.success(`Found ${response.results?.length || 0} companies`);
+      // Ensure searchResults is always an array
+      let results = [];
+      if (response && Array.isArray(response.result)) {
+        results = response.result;
+      } else if (response && Array.isArray(response.results)) {
+        results = response.results;
+      } else if (response && Array.isArray(response)) {
+        results = response;
+      } else {
+        console.warn('⚠️ Unexpected response format:', response);
+        results = [];
+      }
+
+      setSearchResults(results);
+      toast.success(`Found ${results.length} companies`);
 
     } catch (error) {
       console.error('❌ Search error:', error);
@@ -148,7 +221,7 @@ const Dashboard = () => {
       </div>
 
       {/* Debug Panel for Saved Companies */}
-      <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+      {/* <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
         <h3 className="font-semibold text-yellow-800 mb-2">🔍 Debug: Saved Companies API</h3>
         <div className="text-sm space-y-1">
           <p><strong>Available Endpoint:</strong> /search/company/{`{id}`}/saved/ (check if specific company is saved)</p>
@@ -194,7 +267,7 @@ const Dashboard = () => {
             Test Company 1 Saved
           </button>
         </div>
-      </div>
+      </div> */}
 
       <div className="flex">
         {/* Filter Section */}
@@ -249,7 +322,7 @@ const Dashboard = () => {
             </div>
 
             {/* Job Filter */}
-            <div className="border-b border-gray-200">
+            {/* <div className="border-b border-gray-200">
               <button
                 onClick={() => toggleFilter("job")}
                 className="w-full flex items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
@@ -282,7 +355,7 @@ const Dashboard = () => {
                   placeholder="Enter here"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Category Filter */}
             <div className="border-b border-gray-200">
@@ -374,15 +447,11 @@ const Dashboard = () => {
                   {isLoadingCountries ? (
                     <option disabled>Loading countries...</option>
                   ) : (
-                    countryOptions && Array.isArray(countryOptions.options) ? (
-                      countryOptions.options.map((country, index) => (
-                        <option key={index} value={country}>
-                          {country}
-                        </option>
-                      ))
-                    ) : (
-                      <option disabled>No countries available</option>
-                    )
+                    countryOptions.map((country, index) => (
+                      <option key={index} value={country}>
+                        {country}
+                      </option>
+                    ))
                   )}
                 </select>
               </div>
@@ -482,7 +551,7 @@ const Dashboard = () => {
             </div>
 
             {/* Keywords Filter */}
-            <div className="border-b border-gray-200">
+            {/* <div className="border-b border-gray-200">
               <button
                 onClick={() => toggleFilter("keywords")}
                 className="w-full flex items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
@@ -521,7 +590,7 @@ const Dashboard = () => {
                   placeholder="Enter here"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Search Button */}
@@ -536,7 +605,7 @@ const Dashboard = () => {
 
         {/* Data Display Section */}
         <div className="w-4/5 p-6">
-          {searchResults.length === 0 && !isSearching ? (
+          {(!Array.isArray(searchResults) || searchResults.length === 0) && !isSearching ? (
             // Show imported image when no search results
             <div className="flex flex-col items-center justify-center h-full">
               <img
@@ -551,14 +620,14 @@ const Dashboard = () => {
             // Show search results
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-6 mt-2">
-                Search Results ({searchResults.length})
+                Search Results ({Array.isArray(searchResults) ? searchResults.length : 0})
               </h2>
 
               {isSearching ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500 text-lg">Searching for companies...</p>
                 </div>
-              ) : searchResults.length === 0 ? (
+              ) : (!Array.isArray(searchResults) || searchResults.length === 0) ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500 text-lg">
                     No businesses found matching your criteria.
@@ -566,33 +635,53 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {searchResults.map((business) => (
+                  {Array.isArray(searchResults) && searchResults.map((business) => (
                     <div
-                      key={business.id || business.company_name}
+                      key={business.id || business.name}
                       className="bg-white border border-gray-200 rounded-lg p-6"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4">
                           <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
                             <span className="text-white font-semibold text-lg">
-                              {(business.company_name || business.company || 'C').charAt(0)}
+                              {(business.name || 'C').charAt(0)}
                             </span>
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                {business.company_name || business.company || 'Unknown Company'}
+                                {business.name || 'Unknown Company'}
                               </h3>
                               <div className="flex items-center space-x-2 ml-4">
                                 <MdOutlineLocationOn className="text-gray-500" />
                                 <span className="text-gray-500 text-sm">
-                                  {business.location || business.address || 'Location not available'}
+                                  {business.location || 'Location not available'}
                                 </span>
                               </div>
                             </div>
-                            <p className="text-gray-600 text-sm mb-3 leading-relaxed">
-                              {business.description || business.about || 'No description available'}
-                            </p>
+                            <div className="text-gray-600 text-sm mb-3 leading-relaxed">
+                              <p>
+                                {expandedDescriptions[business.name]
+                                  ? (business.description || 'No description available')
+                                  : truncateDescription(business.description)
+                                }
+                              </p>
+                              {business.description && business.description.split(' ').length > 90 && (
+                                <button
+                                  onClick={() => toggleDescription(business.name)}
+                                  className="text-blue-600 hover:text-blue-800 text-xs mt-1 font-medium"
+                                >
+                                  {expandedDescriptions[business.name] ? 'See less' : 'See more'}
+                                </button>
+                              )}
+                            </div>
+                            {business.category && (
+                              <div className="mb-3">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                  {business.category}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -600,12 +689,14 @@ const Dashboard = () => {
                         <div className="flex items-center space-x-4 text-sm text-gray-500 pt-5">
                           <span className="flex items-center">
                             <span className="w-4 h-4 mr-1 -mt-2">👥</span>
-                            Employees: {business.employee_count || business.employees || 'N/A'}
+                            Employees: {business.employee_size || 'N/A'}
                           </span>
-                          <span className="flex items-center">
-                            <span className="w-4 h-4 mr-1 -mt-1">🌐</span>
-                            Website: {business.website || 'N/A'}
-                          </span>
+                          {business.domain && (
+                            <span className="flex items-center">
+                              <span className="w-4 h-4 mr-1 -mt-1">🌐</span>
+                              Website: {business.domain}
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center justify-end space-x-3 mt-4">
                           <button
@@ -615,7 +706,10 @@ const Dashboard = () => {
                             Save
                           </button>
 
-                          <NavLink to="/dashboard/company_details">
+                          <NavLink
+                            to="/dashboard/company_details"
+                            state={{ companyData: business }}
+                          >
                             <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
                               View
                             </button>

@@ -197,10 +197,19 @@ export const ApiSlice = createApi({
             })
         }),
 
-        getCountryOptions: builder.query({
+        getCountryOptions: builder.mutation({
             query: () => ({
-                url: "/search/get_country_options/?location_path=[]",
-                method: "GET"
+                url: "/search/get_country_options/",
+                method: "POST",
+                body: {
+                    location_path: []
+                }
+            }),
+        }),
+        searchDecisionMakers: builder.mutation({
+            query: ({ companyId, designation }) => ({
+                url: `/search/search-company-decision-makers/${companyId}/${designation}/`,
+                method: "POST"
             }),
         }),
 
@@ -235,7 +244,8 @@ export const {
     useGetSubscriptionPlansQuery,
     useSubscribeToplanMutation,
     useSearchcompanyMutation,
-    useGetCountryOptionsQuery,
+    useGetCountryOptionsMutation,
+    useSearchDecisionMakersMutation,
 
 
 } = ApiSlice;

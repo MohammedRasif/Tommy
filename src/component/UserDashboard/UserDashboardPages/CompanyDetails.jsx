@@ -1,66 +1,64 @@
 "use client"
 
 import { useState } from "react"
-import { NavLink } from "react-router-dom"
+import { NavLink, useLocation } from "react-router-dom"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { useSearchDecisionMakersMutation } from "../../../Redux/feature/ApiSlice"
 
 const CompanyDetails = () => {
-  const [selectedLeads, setSelectedLeads] = useState([1, 2, 3])
+  const location = useLocation()
+  const [selectedLeads, setSelectedLeads] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [designation, setDesignation] = useState("")
+  const [decisionMakers, setDecisionMakers] = useState([])
+  const [isLoadingDecisionMakers, setIsLoadingDecisionMakers] = useState(false)
 
-  const companyData = {
+  // Redux API hook
+  const [searchDecisionMakers, { isLoading: isSearchingDecisionMakers }] = useSearchDecisionMakersMutation()
+
+  // Decision maker options
+  const decisionMakerOptions = [
+    "ceo", "cto", "engineering", "finance",
+    "hr", "it", "logistics", "marketing",
+    "operations", "buyer", "sales"
+  ]
+
+  // Get company data from navigation state or use fallback
+  const passedCompanyData = location.state?.companyData
+
+  // Debug: Log the passed company data
+  console.log('🔍 Raw passed company data:', passedCompanyData)
+
+  const companyData = passedCompanyData ? {
+    id: passedCompanyData.id, // Use the actual ID from API response
+    name: passedCompanyData.name || "Company Name Not Available",
+    location: passedCompanyData.location || "Location not available",
+    description: passedCompanyData.description || "No description available",
+    employees: passedCompanyData.employee_size || "N/A",
+    website: passedCompanyData.domain || "Website not available",
+    phone: "Contact information not available", // API doesn't provide phone
+    annualIncome: "Revenue information not available", // API doesn't provide revenue
+    category: passedCompanyData.category || "Category not available",
+    email: passedCompanyData.email || "Email not available"
+  } : {
+    id: 1, // Fallback ID
     name: "Company Name Will Be Displayed Here",
     location: "Austin, Tx",
-    description:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+    description: "Lorem Ipsum is simply dummy text of the printing and typesetting industry...",
     employees: "1-500",
     website: "Website.com",
     phone: "+8801775551325",
     annualIncome: "Annual Income",
+    category: "Technology",
+    email: "contact@company.com"
   }
 
-  const leadsData = [
-    {
-      id: 1,
-      name: "I. Gerardo KGF ltd.",
-      designation: "UI/Ux Designer",
-      website: "View",
-      email: "Access Email",
-      hasEmail: false,
-    },
-    {
-      id: 2,
-      name: "I. Gerardo KGF ltd.",
-      designation: "UI/Ux Designer",
-      website: "View",
-      email: "Access Email",
-      hasEmail: false,
-    },
-    {
-      id: 3,
-      name: "I. Gerardo KGF ltd.",
-      designation: "UI/Ux Designer",
-      website: "View",
-      email: "Access Email",
-      hasEmail: false,
-    },
-    {
-      id: 4,
-      name: "I. Gerardo KGF ltd.",
-      designation: "UI/Ux Designer",
-      website: "View",
-      email: "Access Email",
-      hasEmail: false,
-    },
-    {
-      id: 5,
-      name: "I. Gerardo KGF ltd.",
-      designation: "UI/Ux Designer",
-      website: "View",
-      email: "Sophiaharris@gmail.com",
-      hasEmail: true,
-    },
-  ]
+  // Debug: Log the final company data
+  console.log('🔍 Final company data with ID:', companyData)
+
+  // Use real decision makers data instead of dummy data
+  const leadsData = decisionMakers
 
   const toggleLeadSelection = (leadId) => {
     setSelectedLeads((prev) => (prev.includes(leadId) ? prev.filter((id) => id !== leadId) : [...prev, leadId]))
@@ -70,11 +68,65 @@ const CompanyDetails = () => {
     setIsModalOpen(true)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Submitted designation:", designation)
-    setIsModalOpen(false) // Close modal after submission (can be adjusted)
-    setDesignation("") // Reset input
+
+    if (!designation) {
+      toast.error('Please select a designation')
+      return
+    }
+
+    // Check if we have a valid company ID
+    if (!companyData.id) {
+      console.error('❌ No company ID available:', companyData)
+      toast.error('Company ID not available. Cannot search decision makers.')
+      return
+    }
+
+    try {
+      console.log('🔍 Company data available:', passedCompanyData)
+      console.log(`🔍 Searching decision makers for company ${companyData.id} with designation ${designation}`)
+
+
+      const response = await searchDecisionMakers({
+        companyId: companyData.id,
+        designation: designation
+      }).unwrap()
+
+      console.log('✅ Decision makers found:', response)
+
+      // Add the new decision maker to the list
+      if (response.success && response.name && response.email) {
+        const newDecisionMaker = {
+          id: Date.now(), // Generate a unique ID
+          name: response.name,
+          designation: response.designation.toUpperCase(),
+          website: companyData.website,
+          email: response.email
+        }
+
+        setDecisionMakers(prev => [...prev, newDecisionMaker])
+        toast.success(`Added ${response.name} (${response.designation.toUpperCase()}) to leads`)
+      } else {
+        toast.success(`Found decision makers for ${designation.toUpperCase()}`)
+      }
+
+      setIsModalOpen(false)
+      setDesignation("")
+
+    } catch (error) {
+      console.error('❌ Failed to search decision makers:', error)
+      console.error('❌ Error details:', error)
+
+      // Handle specific backend errors
+      if (error.status === 500 && error.data?.detail?.includes('HasSearchCredit')) {
+        toast.error('Backend permission error. Please contact support.')
+      } else if (error.status === 500) {
+        toast.error('Server error. The API call was successful but there\'s a backend issue.')
+      } else {
+        toast.error(`Failed to search decision makers: ${error.data?.detail || error.message || 'Unknown error'}`)
+      }
+    }
   }
 
   return (
@@ -129,7 +181,16 @@ const CompanyDetails = () => {
             </div>
           </div>
 
-          <p className="text-gray-600 text-sm leading-relaxed mb-6">{companyData.description}</p>
+          <p className="text-gray-600 text-sm leading-relaxed mb-4">{companyData.description}</p>
+
+          {/* Category */}
+          {companyData.category && companyData.category !== "Category not available" && (
+            <div className="mb-6">
+              <span className="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                {companyData.category}
+              </span>
+            </div>
+          )}
 
           {/* Company Stats */}
           <div className="flex items-center space-x-8 mb-6">
@@ -255,7 +316,17 @@ const CompanyDetails = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {leadsData.map((lead) => (
+                {leadsData.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center">
+                      <div className="text-gray-500">
+                        <p className="text-lg font-medium">No decision makers found</p>
+                        <p className="text-sm mt-2">Use the &quot;Find Decision Maker&quot; button above to search for company leads</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  leadsData.map((lead) => (
                   <tr key={lead.id} className="hover:bg-gray-50 text-c">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
@@ -281,7 +352,7 @@ const CompanyDetails = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {lead.hasEmail ? (
+                      {lead.email && lead.email !== 'Access Email' ? (
                         <div className="flex items-center">
                           <svg
                             className="w-4 h-4 mr-2 text-gray-400"
@@ -313,7 +384,8 @@ const CompanyDetails = () => {
                       <span className="text-blue-600 hover:text-blue-800 cursor-pointer font-semibold">Save</span>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -340,24 +412,31 @@ const CompanyDetails = () => {
               <h2 className="text-xl font-semibold text-gray-700 text-center pb-5">Find Decision Maker</h2>
             </div>
             <form onSubmit={handleSubmit}>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Enter Desired Designation</label>
-              <input
-                type="text"
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select Designation</label>
+              <select
                 value={designation}
                 onChange={(e) => setDesignation(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Example: CEO, HR, Sales executive etc."
-              />
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Choose a designation...</option>
+                {decisionMakerOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
-                className="w-full mt-4 bg-[#645CE8] text-white py-2 rounded-sm hover:bg-indigo-700 transition-colors cursor-pointer"
+                disabled={!designation || isSearchingDecisionMakers}
+                className="w-full mt-4 bg-[#645CE8] text-white py-2 rounded-sm hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                Submit
+                {isSearchingDecisionMakers ? 'Searching...' : 'Submit'}
               </button>
             </form>
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   )
 }

@@ -2,12 +2,12 @@ import { debounce } from "lodash"
 
 import { useState, useEffect, useCallback } from "react"
 import { NavLink } from "react-router-dom"
-import { useBusinessSearchMutation, useGetCountryOptionsQuery } from "../../Redux/feature/ApiSlice"
+import { useBusinessSearchMutation, useGetCountryOptionsMutation } from "../../Redux/feature/ApiSlice"
 
 const BusinessFilter = () => {
     // API hooks
     const [searchCompany, { isLoading: isSearching }] = useBusinessSearchMutation()
-    const { data: countryOptions, isLoading: isLoadingCountries, error: countryError } = useGetCountryOptionsQuery()
+    const [getCountryOptions, { isLoading: isLoadingCountries }] = useGetCountryOptionsMutation()
 
     // Form states
     const [showFilters, setShowFilters] = useState(false)
@@ -15,6 +15,9 @@ const BusinessFilter = () => {
     const [searchKeywords, setSearchKeywords] = useState("")
     const [location, setLocation] = useState("")
     const [category, setCategory] = useState("")
+
+    // Country options state
+    const [countryOptions, setCountryOptions] = useState([])
 
     // Search results state
     const [searchResults, setSearchResults] = useState([])
@@ -29,15 +32,30 @@ const BusinessFilter = () => {
         { value: "1000+", label: "1000+" },
     ]
 
-    // Debug country options
+    // Load countries on component mount
     useEffect(() => {
-        if (countryOptions) {
-            console.log('🌍 Country options loaded:', countryOptions)
+        loadCountries()
+    }, [getCountryOptions])
+
+    // Function to load countries
+    const loadCountries = async () => {
+        try {
+            console.log('🌍 Loading countries...')
+            const response = await getCountryOptions().unwrap()
+            console.log('🌍 Country options response:', response)
+
+            if (response && response.options && Array.isArray(response.options)) {
+                setCountryOptions(response.options)
+                console.log('🌍 Countries loaded:', response.options)
+            } else {
+                console.log('⚠️ Unexpected country response format:', response)
+                setCountryOptions([])
+            }
+        } catch (error) {
+            console.error('❌ Failed to load countries:', error)
+            setCountryOptions([])
         }
-        if (countryError) {
-            console.error('❌ Country options error:', countryError)
-        }
-    }, [countryOptions, countryError])
+    }
 
     const categoryOptions = [
         "Technology",
@@ -181,17 +199,14 @@ const BusinessFilter = () => {
                             {isLoadingCountries ? (
                                 <option disabled>Loading countries...</option>
                             ) : (
-                                countryOptions && Array.isArray(countryOptions.options) ? (
-                                    countryOptions.options.map((country, index) => (
-                                        <option key={index} value={country}>
-                                            {country}
-                                        </option>
-                                    ))
-                                ) : (
-                                    <option disabled>No countries available</option>
-                                )
+                                countryOptions.map((country, index) => (
+                                    <option key={index} value={country}>
+                                        {country}
+                                    </option>
+                                ))
                             )}
                         </select>
+
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
