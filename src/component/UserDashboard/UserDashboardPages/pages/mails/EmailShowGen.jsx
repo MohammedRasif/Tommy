@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RecipientForm from "./ReciverInfo";
 import EmailPreview from "./EmailPreview";
 import toast, { Toaster } from "react-hot-toast";
 import ReciverList from "./ReciverList";
+import { useGenerateEmailTemplateMutation } from "../../../../../Redux/feature/ApiSlice";
 
 // Dummy data
 const sampleData = [
@@ -71,7 +72,10 @@ export default function EmailShowGen({
   setIdToShowEmailSingle,
   handleDelete,
   idToShowEmailSingle,
+  contactData, // New prop for contact data
 }) {
+  // API hook for email generation
+  const [generateEmailTemplate, { isLoading: isGeneratingEmail }] = useGenerateEmailTemplateMutation()
   const [recipientData, setRecipientData] = useState({
     name: "Enter here",
     company: "Technova Solutions",
@@ -80,6 +84,21 @@ export default function EmailShowGen({
     description: "I hope this email finds you well. My name i",
     single: true,
   });
+
+  // Auto-fill recipient data when contactData is provided
+  useEffect(() => {
+    if (contactData) {
+      console.log('📧 Auto-filling recipient data from contact:', contactData)
+      setRecipientData({
+        name: contactData.name || "Enter here",
+        company: contactData.companyName || "Company Name",
+        position: contactData.designation || "Position",
+        email: contactData.email || "email@example.com",
+        description: contactData.description || "I hope this email finds you well.",
+        single: true,
+      });
+    }
+  }, [contactData]);
 
   const [emailData, setEmailData] = useState({
     subject: "Partnership Opportunity with Demo ai",
@@ -104,9 +123,35 @@ I recently came across TechNova Solutions's innovative work in cloud solutions a
     });
   };
 
-  const generateEmail = () => {
-    console.log("Generating email with recipient data:", recipientData);
-    // Add real API call or logic here
+  const generateEmail = async (tone = "Formal", mailLength = "Short") => {
+    try {
+      console.log("🔄 Generating email with data:", {
+        description: recipientData.description,
+        tone,
+        mail_length: mailLength
+      });
+
+      const templateData = {
+        description: recipientData.description || "Generate a professional email",
+        tone: tone,
+        mail_length: mailLength
+      };
+
+      const response = await generateEmailTemplate(templateData).unwrap();
+      console.log("✅ Email template generated:", response);
+
+      // Update the email content with the generated response
+      const generatedContent = response.email || response.content || response.template || response;
+      setEmailData({
+        ...emailData,
+        content: generatedContent
+      });
+
+      toast.success("Email generated successfully!");
+    } catch (error) {
+      console.error("❌ Failed to generate email:", error);
+      toast.error(`Failed to generate email: ${error.data?.detail || error.message || 'Unknown error'}`);
+    }
   };
 
   const handleEmailAction = async (action) => {

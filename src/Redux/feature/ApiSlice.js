@@ -162,6 +162,14 @@ export const ApiSlice = createApi({
             invalidatesTags: ['SavedCompanies', 'SavedCompany']
         }),
 
+        getSavedCompaniesAll: builder.query({
+            query: () => ({
+                url: "/search/company/saved_all/",
+                method: "GET"
+            }),
+            providesTags: ['SavedCompanies']
+        }),
+
         getSavedCompany: builder.query({
             query: (companyId) => `/search/company/${companyId}/saved/`,
             providesTags: ['SavedCompany']
@@ -212,6 +220,28 @@ export const ApiSlice = createApi({
                 method: "POST"
             }),
         }),
+        saveDecisionMaker: builder.mutation({
+            query: (decisionMakerId) => ({
+                url: `/search/save_decision_maker/${decisionMakerId}`,
+                method: "POST"
+            }),
+        }),
+
+        getSavedDecisionMakers: builder.query({
+            query: () => ({
+                url: "/search/saved_decision_makers/",
+                method: "GET"
+            }),
+            providesTags: ['SavedDecisionMakers']
+        }),
+
+        generateEmailTemplate: builder.mutation({
+            query: (templateData) => ({
+                url: "/mailbox/template/",
+                method: "POST",
+                body: templateData
+            }),
+        }),
 
 
 
@@ -246,6 +276,9 @@ export const {
     useSearchcompanyMutation,
     useGetCountryOptionsMutation,
     useSearchDecisionMakersMutation,
-
+    useSaveDecisionMakerMutation,
+    useGetSavedDecisionMakersQuery,
+    useGenerateEmailTemplateMutation,
+    useGetSavedCompaniesAllQuery,
 
 } = ApiSlice;

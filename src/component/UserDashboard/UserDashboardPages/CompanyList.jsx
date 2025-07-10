@@ -1,103 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useGetSavedCompaniesAllQuery } from "../../../Redux/feature/ApiSlice"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import { AiOutlineCloudUpload } from "react-icons/ai" // For the cloud icon
 
 const CompanyList = () => {
-  const [companies, setCompanies] = useState([
-    {
-      id: 1,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "all",
-    },
-    {
-      id: 2,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "uploaded",
-    },
-    {
-      id: 3,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "saved",
-    },
-    {
-      id: 4,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "all",
-    },
-    {
-      id: 5,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "uploaded",
-    },
-    {
-      id: 6,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "saved",
-    },
-    {
-      id: 7,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "all",
-    },
-    {
-      id: 8,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "uploaded",
-    },
-    {
-      id: 9,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "saved",
-    },
-    {
-      id: 10,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "all",
-    },
-    {
-      id: 11,
-      name: "L dorado KGF ltd.",
-      location: "Dhaka, Bangladesh",
-      phone: "+8801775551325",
-      website: "View",
-      status: "saved",
-    },
-  ])
+  // API hook to fetch saved companies
+  const { data: savedCompaniesData, isLoading: isLoadingSavedCompanies, error: savedCompaniesError } = useGetSavedCompaniesAllQuery()
+
+  // Initialize companies with API data or dummy data
+  const [companies, setCompanies] = useState([])
 
   const [activeTab, setActiveTab] = useState("all")
   const [selectedCompanies, setSelectedCompanies] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [searchName, setSearchName] = useState("")
+  const [searchLocation, setSearchLocation] = useState("")
   const [openDropdown, setOpenDropdown] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
@@ -110,13 +30,47 @@ const CompanyList = () => {
   })
   const [isModalOpen, setIsModalOpen] = useState(false) // State for modal
 
-  // Filter companies based on active tab and search term
+  // Load saved companies from API
+  useEffect(() => {
+    if (savedCompaniesData && Array.isArray(savedCompaniesData)) {
+      console.log('📊 Saved companies loaded from API:', savedCompaniesData)
+      // Transform API data to match the expected format
+      const transformedData = savedCompaniesData.map(company => ({
+        id: company.id,
+        name: company.name,
+        location: company.location,
+        description: company.description,
+        category: company.category,
+        source: company.source,
+        phone: "N/A", // API doesn't provide phone
+        website: "View", // Default value
+        status: "saved" // All companies from this API are saved
+      }))
+      setCompanies(transformedData)
+    } else if (savedCompaniesError) {
+      console.error('❌ Failed to load saved companies:', savedCompaniesError)
+      toast.error('Failed to load saved companies')
+    }
+  }, [savedCompaniesData, savedCompaniesError])
+
+  // Filter companies based on active tab and search terms
   const filteredCompanies = companies.filter((company) => {
     const matchesTab = activeTab === "all" || company.status === activeTab
-    const matchesSearch =
+
+    // General search term (backward compatibility)
+    const matchesGeneralSearch = !searchTerm ||
       company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       company.location.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesTab && matchesSearch
+
+    // Specific name search
+    const matchesNameSearch = !searchName ||
+      company.name.toLowerCase().includes(searchName.toLowerCase())
+
+    // Specific location search
+    const matchesLocationSearch = !searchLocation ||
+      company.location.toLowerCase().includes(searchLocation.toLowerCase())
+
+    return matchesTab && matchesGeneralSearch && matchesNameSearch && matchesLocationSearch
   })
 
   // Handle tab change
@@ -310,13 +264,14 @@ const CompanyList = () => {
             >
               Import
             </button>
-            <div className="relative">
+            {/* Search by Company Name */}
+            <div className="relative mr-4">
               <input
                 type="text"
-                placeholder="Search by company name or location"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-80"
+                placeholder="Search by company name"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
               />
               <svg
                 className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
@@ -332,6 +287,49 @@ const CompanyList = () => {
                 />
               </svg>
             </div>
+
+            {/* Search by Location */}
+            <div className="relative mr-4">
+              <input
+                type="text"
+                placeholder="Search by location"
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+              />
+              <svg
+                className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+
+            {/* Search Reset Button */}
+            {(searchName || searchLocation) && (
+              <button
+                onClick={() => {
+                  setSearchName("")
+                  setSearchLocation("")
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Clear Search
+              </button>
+            )}
           </div>
         </div>
 
@@ -370,7 +368,31 @@ const CompanyList = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCompanies.map((company) => (
+                {isLoadingSavedCompanies ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center">
+                      <div className="text-gray-500">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-lg font-medium">Loading saved companies...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredCompanies.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center">
+                      <div className="text-gray-500">
+                        <p className="text-lg font-medium">No companies found</p>
+                        <p className="text-sm mt-2">
+                          {searchName || searchLocation ?
+                            'Try adjusting your search criteria' :
+                            'No saved companies available'
+                          }
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCompanies.map((company) => (
                   <tr key={company.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
@@ -490,7 +512,8 @@ const CompanyList = () => {
                       )}
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -589,6 +612,7 @@ const CompanyList = () => {
         {/* Click outside to close dropdown */}
         {openDropdown && <div className="fixed inset-0 z-0" onClick={() => setOpenDropdown(null)}></div>}
       </div>
+      <ToastContainer />
     </div>
   )
 }

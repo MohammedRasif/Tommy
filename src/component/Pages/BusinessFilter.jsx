@@ -16,6 +16,15 @@ const BusinessFilter = () => {
     const [location, setLocation] = useState("")
     const [category, setCategory] = useState("")
 
+    // Hierarchical location states
+    const [selectedCountry, setSelectedCountry] = useState("")
+    const [selectedState, setSelectedState] = useState("")
+    const [selectedCity, setSelectedCity] = useState("")
+    const [stateOptions, setStateOptions] = useState([])
+    const [cityOptions, setCityOptions] = useState([])
+    const [isLoadingStates, setIsLoadingStates] = useState(false)
+    const [isLoadingCities, setIsLoadingCities] = useState(false)
+
     // Country options state
     const [countryOptions, setCountryOptions] = useState([])
 
@@ -31,6 +40,48 @@ const BusinessFilter = () => {
         { value: "501-1000", label: "501-1000" },
         { value: "1000+", label: "1000+" },
     ]
+
+    // Handle country selection
+    const handleCountryChange = (country) => {
+        setSelectedCountry(country)
+        setSelectedState("")
+        setSelectedCity("")
+        setStateOptions([])
+        setCityOptions([])
+
+        // Update the main location state for backward compatibility
+        setLocation(country)
+
+        if (country) {
+            loadStates(country)
+        }
+    }
+
+    // Handle state selection
+    const handleStateChange = (state) => {
+        setSelectedState(state)
+        setSelectedCity("")
+        setCityOptions([])
+
+        // Update location to include state
+        const locationPath = selectedCountry + (state ? `, ${state}` : "")
+        setLocation(locationPath)
+
+        if (state && selectedCountry) {
+            loadCities(selectedCountry, state)
+        }
+    }
+
+    // Handle city selection
+    const handleCityChange = (city) => {
+        setSelectedCity(city)
+
+        // Update location to include city
+        const locationPath = selectedCountry +
+                            (selectedState ? `, ${selectedState}` : "") +
+                            (city ? `, ${city}` : "")
+        setLocation(locationPath)
+    }
 
     // Load countries on component mount
     useEffect(() => {
@@ -54,6 +105,76 @@ const BusinessFilter = () => {
         } catch (error) {
             console.error('❌ Failed to load countries:', error)
             setCountryOptions([])
+        }
+    }
+
+    // Function to load states/regions for selected country
+    const loadStates = async (country) => {
+        try {
+            setIsLoadingStates(true)
+            console.log('🏛️ Loading states for country:', country)
+
+            const response = await fetch('https://multiply-mint-ghost.ngrok-free.app/search/get_country_options/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem("accessToken")}`,
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
+                body: JSON.stringify({
+                    location_path: [country]
+                })
+            })
+
+            const data = await response.json()
+            console.log('🏛️ States response:', data)
+
+            if (data && data.options && Array.isArray(data.options)) {
+                setStateOptions(data.options)
+                console.log('🏛️ States loaded:', data.options)
+            } else {
+                setStateOptions([])
+            }
+        } catch (error) {
+            console.error('❌ Failed to load states:', error)
+            setStateOptions([])
+        } finally {
+            setIsLoadingStates(false)
+        }
+    }
+
+    // Function to load cities for selected state
+    const loadCities = async (country, state) => {
+        try {
+            setIsLoadingCities(true)
+            console.log('🏙️ Loading cities for:', { country, state })
+
+            const response = await fetch('https://multiply-mint-ghost.ngrok-free.app/search/get_country_options/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem("accessToken")}`,
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
+                body: JSON.stringify({
+                    location_path: [country, state]
+                })
+            })
+
+            const data = await response.json()
+            console.log('🏙️ Cities response:', data)
+
+            if (data && data.options && Array.isArray(data.options)) {
+                setCityOptions(data.options)
+                console.log('🏙️ Cities loaded:', data.options)
+            } else {
+                setCityOptions([])
+            }
+        } catch (error) {
+            console.error('❌ Failed to load cities:', error)
+            setCityOptions([])
+        } finally {
+            setIsLoadingCities(false)
         }
     }
 
@@ -100,36 +221,56 @@ const BusinessFilter = () => {
 
     // Effect to trigger real-time search
     useEffect(() => {
-        console.log('🔍 Search effect triggered:', { searchKeywords, location, category, selectedEmployeeSize })
+        console.log('🔍 Search effect triggered:', {
+            searchKeywords,
+            selectedCountry,
+            selectedState,
+            selectedCity,
+            category,
+            selectedEmployeeSize
+        })
 
         // Only search if there's a search term (at least 2 characters) AND a country is selected
-        if (searchKeywords.trim().length >= 2 && location) {
+        if (searchKeywords.trim().length >= 2 && selectedCountry) {
+            // Build hierarchical location array
+            const locationArray = [selectedCountry]
+            if (selectedState) locationArray.push(selectedState)
+            if (selectedCity) locationArray.push(selectedCity)
+
             const searchData = {
                 company_name: searchKeywords,
-                location: [location],
+                location: locationArray, // Send hierarchical location array
                 category: category,
                 company_size: selectedEmployeeSize,
                 previous_results_count: 0
             }
-            console.log('📤 About to search with data:', searchData)
+            console.log('📤 About to search with hierarchical location data:', searchData)
             debouncedSearch(searchData)
         } else {
             // Clear results if search term is too short or no country selected
             if (searchKeywords.trim().length < 2) {
                 console.log('❌ Search term too short, clearing results')
-            } else if (!location) {
+            } else if (!selectedCountry) {
                 console.log('❌ No country selected, clearing results')
             }
             setSearchResults([])
             setShowResults(false)
         }
-    }, [searchKeywords, location, category, selectedEmployeeSize, debouncedSearch])
+    }, [searchKeywords, selectedCountry, selectedState, selectedCity, category, selectedEmployeeSize, debouncedSearch])
 
     const handleReset = () => {
         setSearchKeywords("")
         setLocation("")
         setCategory("")
         setSelectedEmployeeSize("")
+
+        // Reset hierarchical location states
+        setSelectedCountry("")
+        setSelectedState("")
+        setSelectedCity("")
+        setStateOptions([])
+        setCityOptions([])
+
         setSearchResults([])
         setShowResults(false)
     }
@@ -189,10 +330,11 @@ const BusinessFilter = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 616 0z" />
                             </svg>
                         </div>
+                        {/* Country Dropdown */}
                         <select
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base appearance-none bg-white"
+                            value={selectedCountry}
+                            onChange={(e) => handleCountryChange(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base appearance-none bg-white mb-3"
                             disabled={isLoadingCountries}
                         >
                             <option value="">Select Country</option>
@@ -206,6 +348,62 @@ const BusinessFilter = () => {
                                 ))
                             )}
                         </select>
+
+                        {/* State/Region Dropdown */}
+                        {selectedCountry && (
+                            <div className="relative mb-3">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <select
+                                    value={selectedState}
+                                    onChange={(e) => handleStateChange(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base appearance-none bg-white"
+                                    disabled={isLoadingStates}
+                                >
+                                    <option value="">Select State/Region</option>
+                                    {isLoadingStates ? (
+                                        <option disabled>Loading states...</option>
+                                    ) : (
+                                        stateOptions.map((state, index) => (
+                                            <option key={index} value={state}>
+                                                {state}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* City Dropdown */}
+                        {selectedState && (
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <select
+                                    value={selectedCity}
+                                    onChange={(e) => handleCityChange(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base appearance-none bg-white"
+                                    disabled={isLoadingCities}
+                                >
+                                    <option value="">Select City</option>
+                                    {isLoadingCities ? (
+                                        <option disabled>Loading cities...</option>
+                                    ) : (
+                                        cityOptions.map((city, index) => (
+                                            <option key={index} value={city}>
+                                                {city}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                            </div>
+                        )}
 
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

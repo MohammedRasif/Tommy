@@ -1,10 +1,43 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useGetSavedDecisionMakersQuery } from "../../../Redux/feature/ApiSlice"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import EmailShowGen from "./pages/mails/EmailShowGen"
 
 const ContactList = () => {
-  // Sample contact data
-  const [contacts, setContacts] = useState([
+  // API hook to fetch saved decision makers
+  const { data: savedDecisionMakersData, isLoading: isLoadingSavedDecisionMakers, error: savedDecisionMakersError } = useGetSavedDecisionMakersQuery()
+
+  // Local state for contacts and search
+  const [contacts, setContacts] = useState([])
+  const [searchName, setSearchName] = useState("")
+  const [searchDesignation, setSearchDesignation] = useState("")
+
+  // Load saved decision makers from API
+  useEffect(() => {
+    if (savedDecisionMakersData && Array.isArray(savedDecisionMakersData)) {
+      console.log('📊 Saved decision makers loaded from API:', savedDecisionMakersData)
+      // Transform API data to match the expected format
+      const transformedData = savedDecisionMakersData.map(decisionMaker => ({
+        id: decisionMaker.id,
+        name: decisionMaker.name,
+        designation: decisionMaker.designation,
+        companyName: decisionMaker.company_name || "N/A",
+        companyWebsite: decisionMaker.company_website || "View",
+        email: decisionMaker.email,
+        hasEmail: decisionMaker.email && decisionMaker.email !== 'Access Email'
+      }))
+      setContacts(transformedData)
+    } else if (savedDecisionMakersError) {
+      console.error('❌ Failed to load saved decision makers:', savedDecisionMakersError)
+      toast.error('Failed to load saved decision makers')
+    }
+  }, [savedDecisionMakersData, savedDecisionMakersError])
+
+  // Dummy data as fallback (will be replaced by API data)
+  const [dummyContacts] = useState([
     {
       id: 1,
       name: "L dorado KGF ltd.",
@@ -95,6 +128,12 @@ const ContactList = () => {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [editingContact, setEditingContact] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+
+  // Email generation states
+  const [isEmailShown, setIsEmailShown] = useState(false)
+  const [idToShowEmailSingle, setIdToShowEmailSingle] = useState("")
+  const [selectedContactForEmail, setSelectedContactForEmail] = useState(null)
+
   const [editForm, setEditForm] = useState({
     name: "",
     designation: "",
@@ -110,8 +149,23 @@ const ContactList = () => {
     email: "",
   })
 
-  // Filter contacts based on search term
-  const filteredContacts = contacts.filter((contact) => contact.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Filter contacts based on search terms
+  const filteredContacts = contacts.filter((contact) => {
+    // General search term (backward compatibility)
+    const matchesGeneralSearch = !searchTerm ||
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.designation.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // Specific name search
+    const matchesNameSearch = !searchName ||
+      contact.name.toLowerCase().includes(searchName.toLowerCase())
+
+    // Specific designation search
+    const matchesDesignationSearch = !searchDesignation ||
+      contact.designation.toLowerCase().includes(searchDesignation.toLowerCase())
+
+    return matchesGeneralSearch && matchesNameSearch && matchesDesignationSearch
+  })
 
   // Handle contact selection
   const toggleContactSelection = (contactId) => {
@@ -156,8 +210,25 @@ const ContactList = () => {
     setDeleteTarget(null)
   }
 
-  // Handle edit
+  // Handle generate email from "Generate mail" column
+  const handleGenerateEmail = (contact) => {
+    console.log('Generate email clicked for contact:', contact)
+    setIdToShowEmailSingle(contact.id)
+    setSelectedContactForEmail(contact)
+    setIsEmailShown(true)
+    setOpenDropdown(null)
+  }
+
+  // Handle edit - Show email generation popup (from dropdown)
   const handleEdit = (contact) => {
+    console.log('Edit clicked for contact:', contact)
+    setIdToShowEmailSingle(contact.id)
+    setIsEmailShown(true)
+    setOpenDropdown(null)
+  }
+
+  // Handle inline edit (for the old edit functionality if needed)
+  const handleInlineEdit = (contact) => {
     setEditingContact(contact.id)
     setEditForm({
       name: contact.name,
@@ -260,12 +331,13 @@ const ContactList = () => {
               </svg>
               Add
             </button>
-            <div className="relative">
+            {/* Search by Name */}
+            <div className="relative mr-4">
               <input
                 type="text"
                 placeholder="Search by name"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
               />
               <svg
@@ -282,6 +354,43 @@ const ContactList = () => {
                 />
               </svg>
             </div>
+
+            {/* Search by Designation */}
+            <div className="relative mr-4">
+              <input
+                type="text"
+                placeholder="Search by designation"
+                value={searchDesignation}
+                onChange={(e) => setSearchDesignation(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+              />
+              <svg
+                className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+
+            {/* Search Reset Button */}
+            {(searchName || searchDesignation) && (
+              <button
+                onClick={() => {
+                  setSearchName("")
+                  setSearchDesignation("")
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Clear Search
+              </button>
+            )}
           </div>
         </div>
 
@@ -323,7 +432,31 @@ const ContactList = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredContacts.map((contact) => (
+                {isLoadingSavedDecisionMakers ? (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-12 text-center">
+                      <div className="text-gray-500">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-lg font-medium">Loading saved decision makers...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredContacts.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-12 text-center">
+                      <div className="text-gray-500">
+                        <p className="text-lg font-medium">No contacts found</p>
+                        <p className="text-sm mt-2">
+                          {searchName || searchDesignation ?
+                            'Try adjusting your search criteria' :
+                            'No saved decision makers available'
+                          }
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredContacts.map((contact) => (
                   <tr key={contact.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
@@ -423,7 +556,12 @@ const ContactList = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className="text-blue-600 hover:text-blue-800 cursor-pointer">Click</span>
+                      <button
+                        onClick={() => handleGenerateEmail(contact)}
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer font-semibold transition-colors"
+                      >
+                        Generate Email
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm relative">
                       {editingContact === contact.id ? (
@@ -455,12 +593,12 @@ const ContactList = () => {
                           {openDropdown === contact.id && (
                             <div className="absolute right-22 top-12 mt-2 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-10">
                               <div className="py-1">
-                                <button
+                                {/* <button
                                   onClick={() => handleEdit(contact)}
                                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                                 >
-                                  Edit
-                                </button>
+                                  Generate Email
+                                </button> */}
                                 <button
                                   onClick={() => handleSingleDelete(contact.id)}
                                   className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer"
@@ -474,7 +612,8 @@ const ContactList = () => {
                       )}
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -602,6 +741,19 @@ const ContactList = () => {
 
       {/* Click outside to close dropdown */}
       {openDropdown && <div className="fixed inset-0 z-0" onClick={() => setOpenDropdown(null)}></div>}
+
+      {/* Email Generation Popup */}
+      {isEmailShown && (
+        <EmailShowGen
+          idToShowEmailSingle={idToShowEmailSingle}
+          handleDelete={handleSingleDelete}
+          setIsEmailShown={setIsEmailShown}
+          setIdToShowEmailSingle={setIdToShowEmailSingle}
+          contactData={selectedContactForEmail}
+        />
+      )}
+
+      <ToastContainer />
     </div>
   )
 }

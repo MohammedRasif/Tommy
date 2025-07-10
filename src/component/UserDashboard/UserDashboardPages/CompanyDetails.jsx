@@ -4,7 +4,7 @@ import { useState } from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import { useSearchDecisionMakersMutation } from "../../../Redux/feature/ApiSlice"
+import { useSearchDecisionMakersMutation, useSaveCompanyMutation, useSaveDecisionMakerMutation } from "../../../Redux/feature/ApiSlice"
 
 const CompanyDetails = () => {
   const location = useLocation()
@@ -14,8 +14,10 @@ const CompanyDetails = () => {
   const [decisionMakers, setDecisionMakers] = useState([])
   const [isLoadingDecisionMakers, setIsLoadingDecisionMakers] = useState(false)
 
-  // Redux API hook
+  // Redux API hooks
   const [searchDecisionMakers, { isLoading: isSearchingDecisionMakers }] = useSearchDecisionMakersMutation()
+  const [saveCompany, { isLoading: isSavingCompany }] = useSaveCompanyMutation()
+  const [saveDecisionMaker, { isLoading: isSavingDecisionMaker }] = useSaveDecisionMakerMutation()
 
   // Decision maker options
   const decisionMakerOptions = [
@@ -68,6 +70,40 @@ const CompanyDetails = () => {
     setIsModalOpen(true)
   }
 
+  // Handle save company
+  const handleSaveCompany = async () => {
+    if (!companyData.id) {
+      toast.error('Company ID not available. Cannot save company.')
+      return
+    }
+
+    try {
+      console.log('💾 Saving company:', companyData.id)
+      await saveCompany(companyData.id).unwrap()
+      toast.success('Company saved successfully!')
+    } catch (error) {
+      console.error('❌ Failed to save company:', error)
+      toast.error(`Failed to save company: ${error.data?.detail || error.message || 'Unknown error'}`)
+    }
+  }
+
+  // Handle save decision maker
+  const handleSaveDecisionMaker = async (decisionMaker) => {
+    if (!decisionMaker.apiId) {
+      toast.error('Decision maker ID not available. Cannot save decision maker.')
+      return
+    }
+
+    try {
+      console.log('💾 Saving decision maker:', decisionMaker.apiId, decisionMaker.name)
+      await saveDecisionMaker(decisionMaker.apiId).unwrap()
+      toast.success(`Decision maker ${decisionMaker.name} saved successfully!`)
+    } catch (error) {
+      console.error('❌ Failed to save decision maker:', error)
+      toast.error(`Failed to save decision maker: ${error.data?.detail || error.message || 'Unknown error'}`)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -98,7 +134,8 @@ const CompanyDetails = () => {
       // Add the new decision maker to the list
       if (response.success && response.name && response.email) {
         const newDecisionMaker = {
-          id: Date.now(), // Generate a unique ID
+          id: response.id || Date.now(), // Use API ID or generate fallback
+          apiId: response.id, // Store the API ID for saving
           name: response.name,
           designation: response.designation.toUpperCase(),
           website: companyData.website,
@@ -250,8 +287,12 @@ const CompanyDetails = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-[#645CE8] hover:text-white font-semibold cursor-pointer transition-colors">
-              Save
+            <button
+              onClick={handleSaveCompany}
+              disabled={isSavingCompany}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-[#645CE8] hover:text-white font-semibold cursor-pointer transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              {isSavingCompany ? 'Saving...' : 'Save'}
             </button>
             <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-[#645CE8] hover:text-white font-semibold cursor-pointer transition-colors">
               Generate Email
@@ -318,7 +359,7 @@ const CompanyDetails = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {leadsData.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center">
+                    <td colSpan="7" className="px-6 py-12 text-center">
                       <div className="text-gray-500">
                         <p className="text-lg font-medium">No decision makers found</p>
                         <p className="text-sm mt-2">Use the &quot;Find Decision Maker&quot; button above to search for company leads</p>
@@ -381,7 +422,13 @@ const CompanyDetails = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className="text-blue-600 hover:text-blue-800 cursor-pointer font-semibold">Save</span>
+                      <button
+                        onClick={() => handleSaveDecisionMaker(lead)}
+                        disabled={isSavingDecisionMaker}
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer font-semibold disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isSavingDecisionMaker ? 'Saving...' : 'Save'}
+                      </button>
                     </td>
                   </tr>
                   ))

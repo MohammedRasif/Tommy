@@ -172,7 +172,7 @@ export default function RecipientForm({
           </div>
 
           <button
-            onClick={onGenerateEmail}
+            onClick={() => onGenerateEmail(tone, length)}
             className="w-full py-2 bg-indigo-600 text-white rounded-md flex items-center justify-center hover:bg-indigo-700 transition-colors text-xs font-medium"
           >
             <svg
