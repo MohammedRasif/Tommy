@@ -54,18 +54,13 @@ const UserDashboardNavbar = () => {
           </button>
           {isDropdownOpen && (
             <div className="absolute right-0 mt-3 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
-              <a
-                href="#"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >
-                Change Email
-              </a>
-              <a
-                href="#"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              <NavLink
+                to="/change_password"
+                className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={() => setIsDropdownOpen(false)}
               >
                 Change Password
-              </a>
+              </NavLink>
             </div>
           )}
         </div>

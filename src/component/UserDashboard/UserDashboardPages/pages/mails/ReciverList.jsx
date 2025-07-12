@@ -62,7 +62,7 @@ export default function ReciverList({
     <div className="w-full rounded-lg relative">
       <div
         className="text-gray-500 flex items-center gap-2 border px-2 py-1 rounded-lg hover:cursor-pointer border-gray-300 absolute top-5 left-5"
-        onClick={() => goBack((prev) => !prev)}
+        onClick={() => goBack()}
       >
         <FaArrowLeftLong />
         <span>Back</span>
@@ -136,6 +136,9 @@ export default function ReciverList({
                     />
                   </th>
                   <th className="w-1/6 p-4 text-left text-sm font-medium text-gray-700">
+                    Name
+                  </th>
+                  <th className="w-1/4 p-4 text-left text-sm font-medium text-gray-700">
                     Designation
                   </th>
                   <th className="w-1/4 p-4 text-left text-sm font-medium text-gray-700">
@@ -158,7 +161,7 @@ export default function ReciverList({
                 <tbody>
                   {filteredData.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-gray-500">
+                      <td colSpan={7} className="p-8 text-center text-gray-500">
                         {searchQuery
                           ? "No results found for your search."
                           : "No data available."}
@@ -183,6 +186,9 @@ export default function ReciverList({
                         </td>
                         <td className="w-1/4 p-4 text-sm text-[#586685]">
                           {row.designation}
+                        </td>
+                        <td className="w-1/4 p-4 text-sm text-[#586685]">
+                          {row.companyDetails}
                         </td>
                         <td className="w-1/4 p-4">
                           <div className="flex items-center gap-2">

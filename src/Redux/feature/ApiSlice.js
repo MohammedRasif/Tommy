@@ -175,6 +175,14 @@ export const ApiSlice = createApi({
             providesTags: ['SavedCompany']
         }),
 
+        deleteCompany: builder.mutation({
+            query: (companyId) => ({
+                url: `/search/saved_company/${companyId}/delete/`,
+                method: "DELETE"
+            }),
+            invalidatesTags: ['SavedCompanies', 'SavedCompany']
+        }),
+
         googleConnect: builder.mutation({
             query: (data) => ({
                 url: "/oauth2_connects/google_connect/",
@@ -222,7 +230,7 @@ export const ApiSlice = createApi({
         }),
         saveDecisionMaker: builder.mutation({
             query: (decisionMakerId) => ({
-                url: `/search/save_decision_maker/${decisionMakerId}`,
+                url: `/search/save_decision_maker/${decisionMakerId}/`,
                 method: "POST"
             }),
         }),
@@ -235,11 +243,27 @@ export const ApiSlice = createApi({
             providesTags: ['SavedDecisionMakers']
         }),
 
+        deleteDecisionMaker: builder.mutation({
+            query: (decisionMakerId) => ({
+                url: `/search/saved_decision_makers/${decisionMakerId}/delete/`,
+                method: "DELETE"
+            }),
+            invalidatesTags: ['SavedDecisionMakers']
+        }),
+
         generateEmailTemplate: builder.mutation({
             query: (templateData) => ({
                 url: "/mailbox/template/",
                 method: "POST",
                 body: templateData
+            }),
+        }),
+
+        sendEmail: builder.mutation({
+            query: (emailData) => ({
+                url: "/mailbox/send_mail/",
+                method: "POST",
+                body: emailData
             }),
         }),
 
@@ -270,6 +294,8 @@ export const {
     useBusinessSearchMutation,
     useSaveCompanyMutation,
     useGetSavedCompanyQuery,
+    useGetSavedCompaniesAllQuery,
+    useDeleteCompanyMutation,
     useGoogleConnectMutation,
     useGetSubscriptionPlansQuery,
     useSubscribeToplanMutation,
@@ -278,7 +304,8 @@ export const {
     useSearchDecisionMakersMutation,
     useSaveDecisionMakerMutation,
     useGetSavedDecisionMakersQuery,
+    useDeleteDecisionMakerMutation,
     useGenerateEmailTemplateMutation,
-    useGetSavedCompaniesAllQuery,
+    useSendEmailMutation,
 
 } = ApiSlice;

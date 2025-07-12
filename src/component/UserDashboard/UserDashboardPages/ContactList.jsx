@@ -1,14 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useGetSavedDecisionMakersQuery } from "../../../Redux/feature/ApiSlice"
+import { useGetSavedDecisionMakersQuery, useDeleteDecisionMakerMutation } from "../../../Redux/feature/ApiSlice"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import EmailShowGen from "./pages/mails/EmailShowGen"
 
 const ContactList = () => {
-  // API hook to fetch saved decision makers
+  // API hooks
   const { data: savedDecisionMakersData, isLoading: isLoadingSavedDecisionMakers, error: savedDecisionMakersError } = useGetSavedDecisionMakersQuery()
+  const [deleteDecisionMaker, { isLoading: isDeleting }] = useDeleteDecisionMakerMutation()
 
   // Local state for contacts and search
   const [contacts, setContacts] = useState([])
@@ -199,15 +200,34 @@ const ContactList = () => {
   }
 
   // Confirm delete
-  const confirmDelete = () => {
-    if (deleteTarget === "bulk") {
-      setContacts((prev) => prev.filter((contact) => !selectedContacts.includes(contact.id)))
-      setSelectedContacts([])
-    } else {
-      setContacts((prev) => prev.filter((contact) => contact.id !== deleteTarget))
+  const confirmDelete = async () => {
+    try {
+      if (deleteTarget === "bulk") {
+        // Handle bulk delete - call API for each selected contact
+        const deletePromises = selectedContacts.map(contactId =>
+          deleteDecisionMaker(contactId).unwrap()
+        )
+        await Promise.all(deletePromises)
+
+        // Update local state after successful API calls
+        setContacts((prev) => prev.filter((contact) => !selectedContacts.includes(contact.id)))
+        setSelectedContacts([])
+        toast.success(`Successfully deleted ${selectedContacts.length} contacts`)
+      } else {
+        // Handle single delete
+        await deleteDecisionMaker(deleteTarget).unwrap()
+
+        // Update local state after successful API call
+        setContacts((prev) => prev.filter((contact) => contact.id !== deleteTarget))
+        toast.success('Contact deleted successfully')
+      }
+    } catch (error) {
+      console.error('❌ Delete error:', error)
+      toast.error(error?.data?.message || 'Failed to delete contact. Please try again.')
+    } finally {
+      setShowDeleteConfirm(false)
+      setDeleteTarget(null)
     }
-    setShowDeleteConfirm(false)
-    setDeleteTarget(null)
   }
 
   // Handle generate email from "Generate mail" column
@@ -723,15 +743,17 @@ const ContactList = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                  disabled={isDeleting}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Delete
+                  {isDeleting ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>
@@ -750,6 +772,7 @@ const ContactList = () => {
           setIsEmailShown={setIsEmailShown}
           setIdToShowEmailSingle={setIdToShowEmailSingle}
           contactData={selectedContactForEmail}
+          allContactsData={contacts}
         />
       )}
 

@@ -24,6 +24,7 @@ import ChangePassword from "./component/Pages/ChangePassword.jsx";
 import SuccessfullyMessage from "./component/Pages/SuccessfullyMessage.jsx";
 import AiGenerator from "./component/UserDashboard/UserDashboardPages/AiGenerator.jsx";
 import Contact from "./component/UserDashboard/UserDashboardPages/Contact.jsx";
+import OAuthCallback from "./component/OAuth/OAuthCallback.jsx";
 import { Provider } from "react-redux";
 import store from "./Redux/store.js";
 // import AiGenerator from "./component/UserDashboard/UserDashboardPages/AiGenerator.jsx";
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
   {
     path: "/successfully",
     element: <SuccessfullyMessage />,
+  },
+  {
+    path: "/oauth-callback",
+    element: <OAuthCallback />,
   },
   {
     path: "/dashboard",

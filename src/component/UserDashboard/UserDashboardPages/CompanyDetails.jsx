@@ -4,7 +4,7 @@ import { useState } from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import { useSearchDecisionMakersMutation, useSaveCompanyMutation, useSaveDecisionMakerMutation } from "../../../Redux/feature/ApiSlice"
+import { useSearchDecisionMakersMutation, useSaveCompanyMutation, useSaveDecisionMakerMutation, useBusinessSearchMutation } from "../../../Redux/feature/ApiSlice"
 
 const CompanyDetails = () => {
   const location = useLocation()
@@ -18,6 +18,7 @@ const CompanyDetails = () => {
   const [searchDecisionMakers, { isLoading: isSearchingDecisionMakers }] = useSearchDecisionMakersMutation()
   const [saveCompany, { isLoading: isSavingCompany }] = useSaveCompanyMutation()
   const [saveDecisionMaker, { isLoading: isSavingDecisionMaker }] = useSaveDecisionMakerMutation()
+  const [businessSearch, { isLoading: isSearchingCompany }] = useBusinessSearchMutation()
 
   // Decision maker options
   const decisionMakerOptions = [
@@ -31,18 +32,23 @@ const CompanyDetails = () => {
 
   // Debug: Log the passed company data
   console.log('🔍 Raw passed company data:', passedCompanyData)
+  console.log('🔑 Company ID for decision makers:', passedCompanyData?.id)
+  console.log('📊 Data source:', passedCompanyData?.source || 'search_results')
+  console.log('🔍 passedCompanyData.source:', passedCompanyData?.source)
+  console.log('🔍 All passedCompanyData keys:', passedCompanyData ? Object.keys(passedCompanyData) : 'No data')
 
   const companyData = passedCompanyData ? {
     id: passedCompanyData.id, // Use the actual ID from API response
     name: passedCompanyData.name || "Company Name Not Available",
     location: passedCompanyData.location || "Location not available",
     description: passedCompanyData.description || "No description available",
-    employees: passedCompanyData.employee_size || "N/A",
-    website: passedCompanyData.domain || "Website not available",
-    phone: "Contact information not available", // API doesn't provide phone
-    annualIncome: "Revenue information not available", // API doesn't provide revenue
+    employees: passedCompanyData.employee_size || passedCompanyData.employees || "Company size information not available",
+    website: passedCompanyData.domain || passedCompanyData.website || "Website information not available",
+    phone: passedCompanyData.phone || "Phone information not available",
+    annualIncome: passedCompanyData.annualIncome || "Revenue information not available",
     category: passedCompanyData.category || "Category not available",
-    email: passedCompanyData.email || "Email not available"
+    email: passedCompanyData.email || "Email information not available",
+    source: passedCompanyData.source || "search_results" // Preserve source information
   } : {
     id: 1, // Fallback ID
     name: "Company Name Will Be Displayed Here",
@@ -53,8 +59,14 @@ const CompanyDetails = () => {
     phone: "+8801775551325",
     annualIncome: "Annual Income",
     category: "Technology",
-    email: "contact@company.com"
+    email: "contact@company.com",
+    source: "fallback"
   }
+
+  // Debug: Log the constructed company data
+  console.log('🏗️ Constructed companyData:', companyData)
+  console.log('🏗️ companyData.source:', companyData.source)
+  console.log('🏗️ companyData.id:', companyData.id)
 
   // Debug: Log the final company data
   console.log('🔍 Final company data with ID:', companyData)
@@ -121,31 +133,99 @@ const CompanyDetails = () => {
 
     try {
       console.log('🔍 Company data available:', passedCompanyData)
+      console.log('🔍 Data source:', companyData.source)
       console.log(`🔍 Searching decision makers for company ${companyData.id} with designation ${designation}`)
 
+      // If this company comes from saved companies, we need to search for it first
+      // to get it into the "search context" that the backend expects
+      if (companyData.source === 'saved_companies' || companyData.source === 'platform') {
+        console.log('🔄 Company from saved list - searching first to establish context...')
 
-      const response = await searchDecisionMakers({
-        companyId: companyData.id,
-        designation: designation
-      }).unwrap()
+        try {
+          // Search for the company by name to get it into search context
+          const searchResponse = await businessSearch({
+            company_name: companyData.name,
+            location: "",
+            category: "",
+            company_size: "",
+            previous_results_count: 0
+          }).unwrap()
 
-      console.log('✅ Decision makers found:', response)
+          console.log('🔍 Company search response:', searchResponse)
 
-      // Add the new decision maker to the list
-      if (response.success && response.name && response.email) {
-        const newDecisionMaker = {
-          id: response.id || Date.now(), // Use API ID or generate fallback
-          apiId: response.id, // Store the API ID for saving
-          name: response.name,
-          designation: response.designation.toUpperCase(),
-          website: companyData.website,
-          email: response.email
+          // Find the matching company in search results
+          const matchingCompany = searchResponse.result?.find(company =>
+            company.name.toLowerCase() === companyData.name.toLowerCase()
+          )
+
+          if (matchingCompany) {
+            console.log('✅ Found matching company in search results:', matchingCompany)
+            // Use the search result company ID for decision makers
+            const searchCompanyId = matchingCompany.id
+
+            const response = await searchDecisionMakers({
+              companyId: searchCompanyId,
+              designation: designation
+            }).unwrap()
+
+            console.log('✅ Decision makers found using search company ID:', response)
+
+            // Process the response...
+            if (response.success && response.name && response.email) {
+              const newDecisionMaker = {
+                id: response.id || Date.now(),
+                apiId: response.id,
+                name: response.name,
+                designation: response.designation.toUpperCase(),
+                website: companyData.website,
+                email: response.email
+              }
+
+              setDecisionMakers(prev => [...prev, newDecisionMaker])
+              toast.success(`Added ${response.name} (${response.designation.toUpperCase()}) to leads`)
+            } else {
+              toast.success(`Found decision makers for ${designation.toUpperCase()}`)
+            }
+
+          } else {
+            console.log('❌ Company not found in search results')
+            toast.error('Company not found in search results. Cannot find decision makers.')
+            return
+          }
+
+        } catch (searchError) {
+          console.error('❌ Failed to search for company:', searchError)
+          toast.error('Failed to search for company. Cannot find decision makers.')
+          return
         }
 
-        setDecisionMakers(prev => [...prev, newDecisionMaker])
-        toast.success(`Added ${response.name} (${response.designation.toUpperCase()}) to leads`)
       } else {
-        toast.success(`Found decision makers for ${designation.toUpperCase()}`)
+        // Company from direct search - use normal flow
+        console.log('🔍 Company from search results - using direct decision makers API')
+
+        const response = await searchDecisionMakers({
+          companyId: companyData.id,
+          designation: designation
+        }).unwrap()
+
+        console.log('✅ Decision makers found:', response)
+
+        // Process the response...
+        if (response.success && response.name && response.email) {
+          const newDecisionMaker = {
+            id: response.id || Date.now(),
+            apiId: response.id,
+            name: response.name,
+            designation: response.designation.toUpperCase(),
+            website: companyData.website,
+            email: response.email
+          }
+
+          setDecisionMakers(prev => [...prev, newDecisionMaker])
+          toast.success(`Added ${response.name} (${response.designation.toUpperCase()}) to leads`)
+        } else {
+          toast.success(`Found decision makers for ${designation.toUpperCase()}`)
+        }
       }
 
       setIsModalOpen(false)

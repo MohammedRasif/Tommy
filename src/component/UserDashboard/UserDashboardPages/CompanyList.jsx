@@ -1,14 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useGetSavedCompaniesAllQuery } from "../../../Redux/feature/ApiSlice"
+import { useNavigate } from "react-router-dom"
+import { useGetSavedCompaniesAllQuery, useDeleteCompanyMutation } from "../../../Redux/feature/ApiSlice"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { AiOutlineCloudUpload } from "react-icons/ai" // For the cloud icon
 
 const CompanyList = () => {
-  // API hook to fetch saved companies
-  const { data: savedCompaniesData, isLoading: isLoadingSavedCompanies, error: savedCompaniesError } = useGetSavedCompaniesAllQuery()
+  // Hooks
+  const navigate = useNavigate()
+
+  // API hooks
+  const { data: savedCompaniesData, isLoading: isLoadingSavedCompanies, error: savedCompaniesError, refetch: refetchSavedCompanies } = useGetSavedCompaniesAllQuery()
+  const [deleteCompany, { isLoading: isDeleting }] = useDeleteCompanyMutation()
 
   // Initialize companies with API data or dummy data
   const [companies, setCompanies] = useState([])
@@ -21,13 +26,6 @@ const CompanyList = () => {
   const [openDropdown, setOpenDropdown] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [editingCompany, setEditingCompany] = useState(null)
-  const [editForm, setEditForm] = useState({
-    name: "",
-    location: "",
-    phone: "",
-    website: "",
-  })
   const [isModalOpen, setIsModalOpen] = useState(false) // State for modal
 
   // Load saved companies from API
@@ -111,53 +109,36 @@ const CompanyList = () => {
   }
 
   // Confirm delete
-  const confirmDelete = () => {
-    if (deleteTarget === "bulk") {
-      setCompanies((prev) => prev.filter((company) => !selectedCompanies.includes(company.id)))
-      setSelectedCompanies([])
-    } else {
-      setCompanies((prev) => prev.filter((company) => company.id !== deleteTarget))
+  const confirmDelete = async () => {
+    try {
+      if (deleteTarget === "bulk") {
+        
+        const deletePromises = selectedCompanies.map(companyId =>
+          deleteCompany(companyId).unwrap()
+        )
+        await Promise.all(deletePromises)
+
+        setCompanies((prev) => prev.filter((company) => !selectedCompanies.includes(company.id)))
+        setSelectedCompanies([])
+        toast.success(`Successfully deleted ${selectedCompanies.length} companies`)
+      } else {
+     
+        await deleteCompany(deleteTarget).unwrap()
+
+        // Update local state after successful API call
+        setCompanies((prev) => prev.filter((company) => company.id !== deleteTarget))
+        toast.success('Company deleted successfully')
+      }
+    } catch (error) {
+      console.error('❌ Delete error:', error)
+      toast.error(error?.data?.message || 'Failed to delete company. Please try again.')
+    } finally {
+      setShowDeleteConfirm(false)
+      setDeleteTarget(null)
     }
-    setShowDeleteConfirm(false)
-    setDeleteTarget(null)
   }
 
-  // Handle edit
-  const handleEdit = (company) => {
-    setEditingCompany(company.id)
-    setEditForm({
-      name: company.name,
-      location: company.location,
-      phone: company.phone,
-      website: company.website,
-    })
-    setOpenDropdown(null)
-  }
 
-  // Save edit
-  const saveEdit = () => {
-    setCompanies((prev) =>
-      prev.map((company) =>
-        company.id === editingCompany
-          ? {
-              ...company,
-              name: editForm.name,
-              location: editForm.location,
-              phone: editForm.phone,
-              website: editForm.website,
-            }
-          : company,
-      ),
-    )
-    setEditingCompany(null)
-    setEditForm({ name: "", location: "", phone: "", website: "" })
-  }
-
-  // Cancel edit
-  const cancelEdit = () => {
-    setEditingCompany(null)
-    setEditForm({ name: "", location: "", phone: "", website: "" })
-  }
 
   // Handle modal open
   const handleImportClick = () => {
@@ -187,6 +168,68 @@ const CompanyList = () => {
 
   const handleDragOver = (event) => {
     event.preventDefault()
+  }
+
+  // Handle view company details
+  const handleViewCompanyDetails = (company) => {
+    console.log('🔍 BUTTON CLICKED - Viewing company details for:', company)
+    console.log('🔍 Available company fields:', Object.keys(company))
+    console.log('🔍 Full company object:', company)
+    console.log('🔍 company.id:', company.id)
+    console.log('🔍 company.company_id:', company.company_id)
+    console.log('🔍 company["company_id"]:', company["company_id"])
+
+    // Add alert to confirm button click is working
+    alert('View button clicked! Check console for details.')
+
+    const companyData = {
+      // Core identification - CRITICAL for decision makers API
+      id: company.company_id || company.id, // Use company_id for decision makers API, fallback to id
+
+      // Basic company information
+      name: company.name || "Company Name Not Available",
+      location: company.location || "Location not available",
+      description: company.description || "No description available",
+      category: company.category || "Category not available",
+
+      // Extended information - now available from API
+      employee_size: company.employee_size || "Company size not specified",
+      domain: company.domain || "Website not available",
+      email: company.email || "Email not available",
+      phone: company.phone || "Phone not available",
+      annualIncome: company.anual_income || "Revenue information not available",
+
+      // Additional metadata
+      source: company.source || "saved_companies",
+      user: company.user,
+      originalId: company.id, // Keep original ID for reference
+
+      // Ensure we have all the fields that CompanyDetails expects
+      employees: company.employee_size || "Company size not specified", // Alternative field name
+      website: company.domain || "Website not available" // Alternative field name
+    }
+
+    console.log('📊 Original company data from API:', company)
+    console.log('📊 Transformed company data for CompanyDetails:', companyData)
+    console.log('🔑 Company ID for decision makers API:', companyData.id)
+    console.log('🌐 Website:', companyData.domain)
+    console.log('📧 Email:', companyData.email)
+
+    // Validate that we have a proper company ID
+    if (!companyData.id) {
+      console.error('❌ Company ID validation failed:', {
+        'company.company_id': company.company_id,
+        'company.id': company.id,
+        'companyData.id': companyData.id
+      })
+      toast.error(`Company ID is missing. Cannot view company details. company_id: ${company.company_id}, id: ${company.id}`)
+      return
+    }
+
+    // Navigate to company details page with company data
+    navigate('/dashboard/company_details', {
+      state: { companyData }
+    })
   }
 
   return (
@@ -403,112 +446,56 @@ const CompanyList = () => {
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {editingCompany === company.id ? (
-                        <input
-                          type="text"
-                          value={editForm.name}
-                          onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        company.name
-                      )}
+                      {company.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {editingCompany === company.id ? (
-                        <input
-                          type="text"
-                          value={editForm.location}
-                          onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        company.location
-                      )}
+                      {company.location}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {editingCompany === company.id ? (
-                        <input
-                          type="text"
-                          value={editForm.phone}
-                          onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        company.phone
-                      )}
+                      {company.phone}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {editingCompany === company.id ? (
-                        <input
-                          type="text"
-                          value={editForm.website}
-                          onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <span className="text-[#645CE8] hover:text-blue-800 cursor-pointer flex items-center">
-                          {company.website}
-                          <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
-                        </span>
-                      )}
+                      <span className="text-[#645CE8] hover:text-blue-800 cursor-pointer flex items-center">
+                        {company.website}
+                        <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
+                        </svg>
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className="text-[#645CE8] hover:text-blue-800 cursor-pointer">View</span>
+                      <button
+                        onClick={() => handleViewCompanyDetails(company)}
+                        className="text-[#645CE8] hover:text-blue-800 cursor-pointer font-semibold transition-colors"
+                      >
+                        View
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm relative">
-                      {editingCompany === company.id ? (
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={saveEdit}
-                            className="text-green-600 hover:text-green-800 text-xs px-2 py-1 border border-green-600 rounded"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={cancelEdit}
-                            className="text-gray-600 hover:text-gray-800 text-xs px-2 py-1 border border-gray-300 rounded"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => setOpenDropdown(openDropdown === company.id ? null : company.id)}
-                            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                          >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                          </button>
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === company.id ? null : company.id)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                      </button>
 
-                          {openDropdown === company.id && (
-                            <div className="absolute right-5 top-[40px] mt-2 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                              <div className="py-1">
-                                <button
-                                  onClick={() => handleEdit(company)}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleSingleDelete(company.id)}
-                                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </>
+                      {openDropdown === company.id && (
+                        <div className="absolute right-5 top-[40px] mt-2 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                          <div className="py-1">
+                            <button
+                              onClick={() => handleSingleDelete(company.id)}
+                              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -534,15 +521,17 @@ const CompanyList = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                  disabled={isDeleting}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Delete
+                  {isDeleting ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>

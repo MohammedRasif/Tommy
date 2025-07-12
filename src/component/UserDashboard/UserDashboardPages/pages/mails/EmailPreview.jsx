@@ -9,6 +9,7 @@ export default function EmailPreview({
   setEmailData,
   setIsEmailShown,
   setIdToShowEmailSingle,
+  isSendingEmail = false,
 }) {
   return (
     <div className="w-[65%] bg-white flex flex-col h-full">
@@ -45,7 +46,8 @@ export default function EmailPreview({
               subject: e.target.value,
             }))
           }
-          className="w-full text-[#272C36] font-medium text-sm bg-transparent border-none outline-none"
+          placeholder="Enter email subject..."
+          className="w-full text-[#272C36] font-medium text-sm bg-transparent border-none outline-none placeholder-gray-400"
         />
       </div>
 
@@ -86,10 +88,20 @@ export default function EmailPreview({
 
           <button
             onClick={() => onAction("send")}
-            className="flex items-center px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm hover:cursor-pointer"
+            disabled={isSendingEmail}
+            className="flex items-center px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Send className="h-3 w-3 mr-1" />
-            Send
+            {isSendingEmail ? (
+              <>
+                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="h-3 w-3 mr-1" />
+                Send
+              </>
+            )}
           </button>
 
           <button

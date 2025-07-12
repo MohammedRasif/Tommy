@@ -142,12 +142,14 @@ function Profile() {
 
             
             const currentUrl = window.location.origin;
-            const successUrl = `${currentUrl}/dashboard/profile?oauth=success`;
-            const cancelUrl = `${currentUrl}/dashboard/profile?oauth=cancelled`;
+            const successUrl = `${currentUrl}/oauth-callback?status=success`;
+            const cancelUrl = `${currentUrl}/oauth-callback?status=cancelled`;
 
             const response = await googleConnect({
                 success_url: successUrl,
-                cancel_url: cancelUrl
+                cancel_url: cancelUrl,
+                frontend_success_uri: successUrl,
+                frontend_cancel_url: cancelUrl
             }).unwrap();
 
             console.log("Google Connect API response:", response);
